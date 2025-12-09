@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardians - CHILDTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: "Segoe UI", Arial, sans-serif; 
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      color: #2c3e50; 
+      transition: all 0.4s ease;
+      min-height: 100vh;
+    }
+    body.dark { 
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0; 
+    }
+
+    /* Navbar Styles */
+    .navbar { 
+      width: 100%; 
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white; 
+      padding: 15px 35px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      z-index: 1000; 
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    body.dark .navbar { 
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .navbar .left { display: flex; align-items: center; gap: 30px; }
+    .navbar .logo { 
+      font-size: 26px; 
+      font-weight: 800; 
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar .logo i { 
+      font-size: 28px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .navbar a { 
+      text-decoration: none; 
+      color: white; 
+      font-weight: 600; 
+      font-size: 15px; 
+      padding: 10px 18px; 
+      border-radius: 10px; 
+      transition: all 0.3s ease;
+      display: flex; 
+      align-items: center; 
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .navbar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.2);
+      transition: left 0.3s ease;
+    }
+    .navbar a:hover::before { left: 0; }
+    .navbar a:hover { 
+      background: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+    .navbar a.active { 
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .navbar .right { display: flex; align-items: center; gap: 15px; }
+
+    .user-info { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      padding: 10px 18px; 
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .user-info .name { font-weight: 700; font-size: 15px; }
+    .user-info .section { font-size: 13px; opacity: 0.9; }
+
+    .toggle-btn, .notif-btn, .logout-btn { 
+      background: rgba(255,255,255,0.2);
+      color: white; 
+      border: none; 
+      padding: 11px 20px; 
+      border-radius: 10px; 
+      cursor: pointer; 
+      font-size: 14px; 
+      transition: all 0.3s ease;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .toggle-btn:hover, .notif-btn:hover { 
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .logout-btn { 
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      border: none;
+    }
+    .logout-btn:hover { 
+      background: linear-gradient(135deg, #ff5252, #e53935);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+    }
+
+    /* Main Container */
+    .main-container { 
+      display: flex; 
+      margin-top: 80px; 
+      min-height: calc(100vh - 80px);
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* Sidebar */
+    .sidebar { 
+      width: 400px;
+      background: rgba(255,255,255,0.95);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 100px;
+      height: calc(100vh - 120px);
+      overflow-y: auto;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    .sidebar.collapsed { 
+      width: 70px; 
+      padding: 25px 15px;
+    }
+    body.dark .sidebar { 
+      background: rgba(30,41,59,0.95);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .sidebar-header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      margin-bottom: 25px;
+    }
+    .sidebar h2 { 
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 24px; 
+      font-weight: 700;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar.collapsed h2 { opacity: 0; display: none; }
+    .collapse-btn { 
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white; 
+      border: none; 
+      width: 40px; 
+      height: 40px; 
+      border-radius: 50%; 
+      cursor: pointer; 
+      font-size: 16px; 
+      transition: all 0.3s ease;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+    }
+    .collapse-btn:hover { 
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+    }
+    .calendar-wrapper { 
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 16px; 
+      padding: 15px; 
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+      transition: opacity 0.3s;
+    }
+    .sidebar.collapsed .calendar-wrapper { opacity: 0; display: none; }
+    body.dark .calendar-wrapper { 
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+    }
+    .calendar-wrapper iframe { 
+      border: 0; 
+      border-radius: 12px; 
+      width: 100%; 
+      height: 600px;
+    }
+
+    /* Content Area */
+    .content { 
+      flex: 1; 
+      position: relative;
+      z-index: 1;
+    }
+    .content h1 { 
+      margin-bottom: 30px; 
+      font-size: 36px; 
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      text-transform: uppercase; 
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      animation: slideInDown 0.6s ease;
+    }
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stats Container */
+    .stats-container { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+      gap: 20px; 
+      margin-bottom: 30px;
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .stat-card { 
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+      padding: 25px; 
+      border-radius: 16px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      display: flex; 
+      align-items: center; 
+      gap: 20px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(99,102,241,0.1);
+    }
+    body.dark .stat-card { 
+      background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(30,41,59,0.85));
+      border-color: rgba(99,102,241,0.2);
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(99,102,241,0.2);
+    }
+    .stat-icon { 
+      width: 60px; 
+      height: 60px; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 28px;
+    }
+    .stat-icon.guardians { 
+      background: linear-gradient(135deg, #ddd6fe, #c4b5fd);
+      color: #6366f1;
+    }
+    .stat-icon.students { 
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #f59e0b;
+    }
+    .stat-info h3 { 
+      font-size: 14px; 
+      color: #64748b;
+      margin-bottom: 5px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    body.dark .stat-info h3 { color: #94a3b8; }
+    .stat-info p { 
+      font-size: 32px; 
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Search Container */
+    .search-container { 
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+      padding: 25px 35px; 
+      border-radius: 20px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      margin-bottom: 30px; 
+      display: flex; 
+      gap: 15px; 
+      align-items: center; 
+      flex-wrap: wrap;
+      border: 1px solid rgba(99,102,241,0.1);
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    body.dark .search-container { 
+      background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(30,41,59,0.85));
+      border-color: rgba(99,102,241,0.2);
+    }
+    .search-container input { 
+      flex: 1;
+      min-width: 250px;
+      padding: 12px 18px; 
+      border: 2px solid #e2e8f0;
+      border-radius: 12px; 
+      font-size: 14px; 
+      background: white; 
+      color: #2c3e50;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    body.dark .search-container input { 
+      background: #0f172a;
+      color: #e2e8f0; 
+      border-color: #334155;
+    }
+    .search-container input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+    }
+    .search-container button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      color: white;
+      background: linear-gradient(135deg, #64748b, #475569);
+      box-shadow: 0 4px 15px rgba(100,116,139,0.3);
+    }
+    .search-container button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(100,116,139,0.4);
+    }
+
+    /* Table Container */
+    .table-container { 
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+      padding: 35px; 
+      border-radius: 20px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      overflow-x: auto;
+      border: 1px solid rgba(99,102,241,0.1);
+      animation: fadeInUp 0.6s ease 0.4s both;
+    }
+    body.dark .table-container { 
+      background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(30,41,59,0.85));
+      border-color: rgba(99,102,241,0.2);
+    }
+    .table-container h2 { 
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 25px; 
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .guardian-table { 
+      width: 100%; 
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 15px;
+    }
+    .guardian-table th, .guardian-table td { 
+      padding: 18px 24px; 
+      text-align: left;
+    }
+    .guardian-table th { 
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white; 
+      font-weight: 700;
+      text-transform: uppercase; 
+      font-size: 13px; 
+      letter-spacing: 1px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .guardian-table th:first-child {
+      border-top-left-radius: 12px;
+    }
+    .guardian-table th:last-child {
+      border-top-right-radius: 12px;
+    }
+    .guardian-table tbody tr { 
+      transition: all 0.3s ease;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    body.dark .guardian-table tbody tr {
+      border-bottom-color: #334155;
+    }
+    .guardian-table tbody tr:hover { 
+      background: rgba(99,102,241,0.05);
+      transform: scale(1.01);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.1);
+    }
+
+    .guardian-photo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #6366f1;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .guardian-photo:hover {
+      transform: scale(2.5);
+      z-index: 100;
+      border-color: #4f46e5;
+      box-shadow: 0 8px 25px rgba(99,102,241,0.5);
+    }
+    .guardian-photo.default {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .relationship-badge { 
+      display: inline-block; 
+      padding: 6px 14px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #ddd6fe, #c4b5fd);
+      color: #5b21b6;
+    }
+
+    .student-highlight {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: #92400e;
+      border-left: 4px solid #f59e0b;
+      display: inline-block;
+    }
+
+    .loading { 
+      text-align: center; 
+      padding: 40px; 
+      color: #64748b;
+      font-size: 16px;
+    }
+    .loading i { 
+      font-size: 40px; 
+      margin-bottom: 15px; 
+      animation: spin 1s linear infinite;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    @keyframes spin { 
+      from { transform: rotate(0deg); } 
+      to { transform: rotate(360deg); } 
+    }
+
+    .empty-state { 
+      text-align: center; 
+      padding: 60px 20px; 
+      color: #94a3b8;
+    }
+    .empty-state i { 
+      font-size: 64px; 
+      margin-bottom: 20px; 
+      opacity: 0.3;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .empty-state p { 
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .alert { 
+      padding: 18px 24px; 
+      border-radius: 12px; 
+      margin-bottom: 25px; 
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideInRight 0.4s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .alert i {
+      font-size: 20px;
+    }
+    .alert.success { 
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      color: #155724; 
+      border-left: 5px solid #28a745;
+    }
+    .alert.error { 
+      background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+      color: #721c24; 
+      border-left: 5px solid #dc3545;
+    }
+
+    /* Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    body.dark ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar { width: 380px; }
+      .sidebar.collapsed { width: 70px; }
+      .main-container { padding: 15px; }
+    }
+
+    @media (max-width: 768px) {
+      .main-container { flex-direction: column; padding: 10px; }
+      .sidebar { width: 100%; height: auto; position: relative; top: 0; }
+      .sidebar.collapsed { height: 80px; width: 100%; }
+      .navbar .left { flex-wrap: wrap; gap: 15px; }
+      .navbar a span { display: none; }
+      .user-info { flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 12px; }
+      .content h1 { font-size: 28px; }
+      .stats-container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="light">
+
+  <div class="navbar">
+    <div class="left">
+      <div class="logo"><i class="fa-solid fa-child-reaching"></i>CHILDTrack</div>
+      <a href="home.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+      <a href="attendance.html"><i class="fa-solid fa-clipboard-check"></i><span>Attendance</span></a>
+      <a href="absences.html"><i class="fa-solid fa-clipboard-list"></i><span>Absences</span></a>
+      <a href="dropouts.html"><i class="fa-solid fa-user-slash"></i><span>Dropouts</span></a>
+      <a href="guardians.html" class="active"><i class="fa-solid fa-users"></i><span>Guardians</span></a>
+      <a href="parentqr.html" class="active"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
+    </div>
+    <div class="right">
+      <div class="user-info" id="userInfo">
+        <div>
+          <div class="name" id="userName">Loading...</div>
+          <div class="section" id="userSection"></div>
+        </div>
+      </div>
+      <button class="notif-btn" onclick="location.href='notification.html'">
+        <i class="fa-solid fa-bell"></i> Notifications
+      </button>
+      <button class="toggle-btn" id="modeToggle"><i class="fa-solid fa-moon"></i> Dark Mode</button>
+      <button class="logout-btn" id="logoutBtn"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fa-solid fa-calendar-days"></i> Calendar</h2>
+        <button class="collapse-btn" id="collapseBtn" title="Toggle Calendar">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+      </div>
+      <div class="calendar-wrapper">
+        <iframe 
+          id="calendarFrame"
+          src="https://calendar.google.com/calendar/embed?src=en.philippines%23holiday%40group.v.calendar.google.com&ctz=Asia%2FManila" 
+          frameborder="0" 
+          scrolling="no">
+        </iframe>
+      </div>
+    </aside>
+
+    <main class="content">
+      <h1><i class="fa-solid fa-users"></i> Guardian Directory</h1>
+      
+      <div id="alertContainer"></div>
+
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-icon guardians">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Total Guardians</h3>
+            <p id="totalGuardians">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon students">
+            <i class="fa-solid fa-child"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Unique Students</h3>
+            <p id="uniqueStudents">0</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="search-container">
+        <input type="text" id="searchInput" placeholder="🔍 Search by guardian name, student name, or contact...">
+        <button id="clearSearchBtn"><i class="fa-solid fa-times"></i> Clear</button>
+        <button id="showAllBtn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); box-shadow: 0 4px 15px rgba(139,92,246,0.3);"><i class="fa-solid fa-eye"></i> Show All Guardians</button>
+        <button id="debugAPIBtn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245,158,11,0.3);"><i class="fa-solid fa-bug"></i> Debug API</button>
+      </section>
+
+      <section class="table-container">
+        <h2><i class="fa-solid fa-table"></i> Guardian Records</h2>
+        <div id="loadingIndicator" class="loading" style="display:none;">
+          <i class="fa-solid fa-spinner"></i>
+          <p>Loading guardian records...</p>
+        </div>
+        <table class="guardian-table" id="guardianTable">
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Guardian Name</th>
+              <th>Student Name</th>
+              <th>Age</th>
+              <th>Relationship</th>
+              <th>Contact</th>
+              <th>Teacher</th>
+              <th>Registered</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // ============================
+    // AUTHENTICATION CHECK
+    // ============================
+    let authToken = null;
+    let teacherId = null;
+
+    function checkAuthentication() {
+      authToken = localStorage.getItem("authToken") || 
+                  localStorage.getItem("auth_token") || 
+                  localStorage.getItem("token");
+      
+      teacherId = localStorage.getItem("teacherId") || 
+                  localStorage.getItem("teacher_id") || 
+                  localStorage.getItem("id");
+
+      console.log("🔐 Authentication check:", {
+        hasToken: !!authToken,
+        hasTeacherId: !!teacherId,
+        token: authToken ? "***" + authToken.slice(-4) : "none",
+        teacherId: teacherId
+      });
+      
+      console.log("📦 All localStorage items:");
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        console.log(`  ${key}:`, key.includes('token') || key.includes('Token') ? '***' + value.slice(-4) : value);
+      }
+
+      if (!authToken) {
+        console.log("❌ No authentication token found, redirecting to login...");
+        alert("⚠️ Please login first to access the guardians page.");
+        window.location.href = "teacherslogin.html";
+        return false;
+      }
+
+      // Teacher ID is optional for now since we'll fetch all guardians
+      if (!teacherId) {
+        console.warn("⚠️ Teacher ID not found. Will fetch all guardians.");
+      }
+
+      return true;
+    }
+
+    // ============================
+    // USER INFO DISPLAY
+    // ============================
+    function displayUserInfo() {
+      const teacherName = localStorage.getItem("teacherName") || 
+                         localStorage.getItem("teacher_name") || 
+                         localStorage.getItem("name") || 
+                         "Teacher";
+      
+      const teacherSection = localStorage.getItem("teacherSection") || 
+                            localStorage.getItem("teacher_section") || 
+                            localStorage.getItem("grade") || 
+                            localStorage.getItem("section") || 
+                            "";
+
+      document.getElementById("userName").textContent = teacherName;
+      document.getElementById("userSection").textContent = teacherSection ? `Grade ${teacherSection}` : "";
+
+      console.log("👤 User info displayed:", { teacherName, teacherSection });
+    }
+
+    // ============================
+    // LOGOUT FUNCTIONALITY
+    // ============================
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      if (confirm("Are you sure you want to logout?")) {
+        console.log("🚪 Logging out...");
+        
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("token");
+        localStorage.removeItem("teacherId");
+        localStorage.removeItem("teacher_id");
+        localStorage.removeItem("id");
+        localStorage.removeItem("teacherName");
+        localStorage.removeItem("teacher_name");
+        localStorage.removeItem("name");
+        localStorage.removeItem("teacherSection");
+        localStorage.removeItem("teacher_section");
+        localStorage.removeItem("grade");
+        localStorage.removeItem("section");
+        localStorage.removeItem("userData");
+
+        alert("✅ Successfully logged out!");
+        window.location.href = "teacherslogin.html";
+      }
+    });
+
+    // ============================
+    // API CONFIGURATION
+    // ============================
+    const API_BASE = 'https://childtrack-backend.onrender.com/api';
+    const API_GUARDIAN = `${API_BASE}/guardian`;
+
+    let allGuardianData = [];
+    let filteredGuardianData = [];
+
+    function getAuthHeaders() {
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (authToken) {
+        headers['Authorization'] = `Token ${authToken}`;
+      }
+      return headers;
+    }
+
+    function showAlert(message, type = 'success') {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert ${type}`;
+      alert.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+      alertContainer.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // ============================
+    // LOAD GUARDIAN DATA
+    // ============================
+    async function loadGuardianData() {
+      const tbody = document.querySelector("#guardianTable tbody");
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      
+      try {
+        loadingIndicator.style.display = 'block';
+        tbody.innerHTML = "";
+        
+        console.log('📡 Fetching guardian data...');
+        console.log('🔑 Using auth token:', authToken ? '***' + authToken.slice(-4) : 'none');
+        console.log('👤 Teacher ID:', teacherId);
+        
+        // Try authenticated request first
+        let response = await fetch(API_GUARDIAN, {
+          headers: getAuthHeaders()
+        });
+        
+        console.log('📡 Response Status:', response.status);
+        
+        // If 404, try with trailing slash
+        if (!response.ok && response.status === 404) {
+          console.log('⚠️ Trying with trailing slash...');
+          response = await fetch(`${API_GUARDIAN}/`, {
+            headers: getAuthHeaders()
+          });
+          console.log('📡 Response Status (with slash):', response.status);
+        }
+        
+        // If still not ok, try without auth
+        if (!response.ok) {
+          console.log('⚠️ Authenticated request failed, trying without auth...');
+          response = await fetch(API_GUARDIAN);
+          console.log('📡 Response Status (no auth):', response.status);
+          
+          if (!response.ok) {
+            response = await fetch(`${API_GUARDIAN}/`);
+            console.log('📡 Response Status (no auth with slash):', response.status);
+          }
+        }
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ API failed:', errorText);
+          throw new Error(`API Error: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        console.log('📊 Raw API response:', data);
+        console.log('📊 Response type:', typeof data);
+        console.log('📊 Is Array:', Array.isArray(data));
+        console.log('📊 Response keys:', Object.keys(data));
+        
+        // Handle both array and object responses
+        let guardianArray = [];
+        if (Array.isArray(data)) {
+          guardianArray = data;
+        } else if (data && typeof data === 'object') {
+          // If it's an object with results property (paginated response)
+          if (data.results && Array.isArray(data.results)) {
+            guardianArray = data.results;
+            console.log('✅ Found results array, length:', guardianArray.length);
+            console.log('📋 Pagination info - count:', data.count, 'next:', data.next, 'previous:', data.previous);
+          } else if (data.data && Array.isArray(data.data)) {
+            guardianArray = data.data;
+            console.log('✅ Found data array, length:', guardianArray.length);
+          } else {
+            // If it's a single object, wrap it in an array
+            guardianArray = [data];
+            console.log('✅ Single object wrapped in array');
+          }
+        }
+        
+        console.log('📊 Total guardian records:', guardianArray.length);
+        console.log('📋 Sample data:', guardianArray[0]);
+        console.log('📋 All data:', guardianArray);
+        
+        allGuardianData = guardianArray;
+        filteredGuardianData = guardianArray;
+        
+        loadingIndicator.style.display = 'none';
+        
+        // Update statistics
+        updateStatistics();
+        
+        // Display data
+        displayGuardianData(filteredGuardianData);
+        
+        if (guardianArray.length === 0) {
+          showAlert('⚠️ No guardian records found. The API returned an empty list. Check if the teacher ID filter is correct.', 'error');
+        }
+        
+      } catch (error) {
+        loadingIndicator.style.display = 'none';
+        console.error('❌ Error loading guardians:', error);
+        showAlert('Error loading guardian records: ' + error.message, 'error');
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: #dc3545;"><i class="fa-solid fa-triangle-exclamation" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>Failed to load records. Please try again.</td></tr>`;
+      }
+    }
+
+    // ============================
+    // UPDATE STATISTICS
+    // ============================
+    function updateStatistics() {
+      // Ensure filteredGuardianData is an array
+      if (!Array.isArray(filteredGuardianData)) {
+        console.warn('⚠️ filteredGuardianData is not an array:', filteredGuardianData);
+        filteredGuardianData = [];
+      }
+      
+      const totalGuardians = filteredGuardianData.length;
+      const uniqueStudents = new Set(filteredGuardianData.map(g => g.student_name || '')).size;
+      
+      document.getElementById('totalGuardians').textContent = totalGuardians;
+      document.getElementById('uniqueStudents').textContent = uniqueStudents;
+      
+      console.log('📊 Stats updated:', { totalGuardians, uniqueStudents });
+    }
+
+    // ============================
+    // DISPLAY GUARDIAN DATA
+    // ============================
+    function displayGuardianData(data) {
+      const tbody = document.querySelector("#guardianTable tbody");
+      tbody.innerHTML = "";
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="empty-state">
+              <i class="fa-solid fa-users-slash"></i>
+              <p style="font-size: 18px; margin-bottom: 20px;">
+                ${document.getElementById('searchInput').value 
+                  ? 'No guardians match your search. Try a different term.' 
+                  : 'No guardian records found for your teacher profile.'}
+              </p>
+              ${!document.getElementById('searchInput').value ? `
+                <div style="text-align: left; max-width: 600px; margin: 0 auto; background: rgba(99,102,241,0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #6366f1;">
+                  <p style="font-weight: 700; font-size: 16px; margin-bottom: 15px; color: #6366f1;">
+                    <i class="fa-solid fa-lightbulb"></i> How to fix this:
+                  </p>
+                  <ol style="line-height: 2; color: #64748b;">
+                    <li>Open <a href="https://childtrack-backend.onrender.com/admin/" target="_blank" style="color: #6366f1; font-weight: 600;">Django Admin</a></li>
+                    <li>Go to <strong>GUARDIAN → Guardians</strong></li>
+                    <li>Click on the guardian: <strong>"Sambling, Kyle Shanica Nicole V."</strong></li>
+                    <li>Find the <strong>"Teacher"</strong> dropdown field</li>
+                    <li>Select <strong>YOUR teacher profile</strong> from the list</li>
+                    <li>Click <strong>Save</strong></li>
+                    <li>Refresh this page</li>
+                  </ol>
+                  <p style="margin-top: 15px; font-size: 14px; color: #64748b;">
+                    <i class="fa-solid fa-info-circle"></i> <strong>Note:</strong> The guardian must be assigned to your teacher profile to appear here.
+                  </p>
+                  <button onclick="document.getElementById('debugAPIBtn').click()" style="margin-top: 15px; padding: 10px 20px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    <i class="fa-solid fa-bug"></i> Run Diagnostic
+                  </button>
+                </div>
+              ` : ''}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // Sort by timestamp (most recent first)
+      data.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+      
+      data.forEach((guardian) => {
+        const tr = document.createElement("tr");
+        
+        const guardianName = guardian.name || 'N/A';
+        const studentName = guardian.student_name || 'N/A';
+        const age = guardian.age || 'N/A';
+        const relationship = guardian.relationship || 'N/A';
+        const contact = guardian.contact || 'N/A';
+        const teacherName = guardian.teacher || teacherId || 'N/A';
+        const timestamp = guardian.timestamp || 'N/A';
+        const photo = guardian.photo || guardian.image || '';
+        
+        // Create photo HTML
+        let photoHTML = '';
+        if (photo && photo.trim() !== '') {
+          // Handle both full URLs and relative paths
+          const photoUrl = photo.startsWith('http') ? photo : `https://childtrack-backend.onrender.com${photo}`;
+          photoHTML = `<img src="${photoUrl}" alt="${guardianName}" class="guardian-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                       <div class="guardian-photo default" style="display:none;"><i class="fa-solid fa-user"></i></div>`;
+        } else {
+          // Default avatar with first letter
+          const firstLetter = guardianName.charAt(0).toUpperCase();
+          photoHTML = `<div class="guardian-photo default">${firstLetter}</div>`;
+        }
+        
+        tr.innerHTML = `
+          <td style="text-align: center;">
+            ${photoHTML}
+          </td>
+          <td>
+            <strong style="font-size: 16px; color: #6366f1;">
+              <i class="fa-solid fa-user-shield"></i> ${guardianName}
+            </strong>
+          </td>
+          <td>
+            <div class="student-highlight">
+              <i class="fa-solid fa-child"></i> <strong>${studentName}</strong>
+            </div>
+          </td>
+          <td style="font-weight: 600; font-size: 16px;">
+            ${age} years
+          </td>
+          <td>
+            <span class="relationship-badge">
+              <i class="fa-solid fa-heart"></i> ${relationship}
+            </span>
+          </td>
+          <td style="font-weight: 600;">
+            <i class="fa-solid fa-phone" style="color: #6366f1;"></i> ${contact}
+          </td>
+          <td style="color: #64748b; font-weight: 500;">
+            <i class="fa-solid fa-chalkboard-user"></i> ${teacherName}
+          </td>
+          <td style="font-size: 13px; color: #94a3b8; font-weight: 500;">
+            <i class="fa-solid fa-clock"></i> ${formatDate(timestamp)}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      console.log(`✅ Displayed ${data.length} guardian records`);
+    }
+
+    // ============================
+    // SEARCH FUNCTIONALITY
+    // ============================
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (searchTerm === '') {
+        filteredGuardianData = allGuardianData;
+      } else {
+        filteredGuardianData = allGuardianData.filter(guardian => {
+          const guardianName = (guardian.name || '').toLowerCase();
+          const studentName = (guardian.student_name || '').toLowerCase();
+          const contact = (guardian.contact || '').toLowerCase();
+          const relationship = (guardian.relationship || '').toLowerCase();
+          const teacher = (guardian.teacher || '').toString().toLowerCase();
+          const age = (guardian.age || '').toString();
+          
+          return guardianName.includes(searchTerm) ||
+                 studentName.includes(searchTerm) ||
+                 contact.includes(searchTerm) ||
+                 relationship.includes(searchTerm) ||
+                 teacher.includes(searchTerm) ||
+                 age.includes(searchTerm);
+        });
+      }
+      
+      updateStatistics();
+      displayGuardianData(filteredGuardianData);
+      
+      console.log(`🔍 Search: "${searchTerm}" - Found ${filteredGuardianData.length} results`);
+    });
+
+    document.getElementById('clearSearchBtn').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      filteredGuardianData = allGuardianData;
+      updateStatistics();
+      displayGuardianData(filteredGuardianData);
+      console.log('🔄 Search cleared');
+    });
+
+    // ============================
+    // SHOW ALL GUARDIANS BUTTON
+    // ============================
+    document.getElementById('showAllBtn').addEventListener('click', async () => {
+      const message = `⚠️ IMPORTANT: Based on your Django backend code, the API filters guardians by teacher.\n\n` +
+                     `This button can't bypass that filter.\n\n` +
+                     `The issue is:\n` +
+                     `• Your account might not have a TeacherProfile in Django\n` +
+                     `• OR the guardian is assigned to a different teacher\n\n` +
+                     `SOLUTION:\n` +
+                     `1. Go to Django Admin\n` +
+                     `2. Check "Teacher profiles" - does your user have one?\n` +
+                     `3. Check the Guardian record - which teacher is it assigned to?\n` +
+                     `4. Update the guardian's teacher field to match your profile\n\n` +
+                     `Click OK to see the API response anyway.`;
+      
+      if (!confirm(message)) {
+        return;
+      }
+      
+      console.log('👁️ Attempting to fetch guardians...');
+      const tbody = document.querySelector("#guardianTable tbody");
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      
+      try {
+        loadingIndicator.style.display = 'block';
+        
+        const response = await fetch(API_GUARDIAN, {
+          headers: getAuthHeaders()
+        });
+        
+        console.log('📡 Response Status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API Error ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Response:', data);
+        
+        let guardianArray = [];
+        if (Array.isArray(data)) {
+          guardianArray = data;
+        } else if (data.results && Array.isArray(data.results)) {
+          guardianArray = data.results;
+        } else if (data.data && Array.isArray(data.data)) {
+          guardianArray = data.data;
+        }
+        
+        console.log('📊 Total guardians found:', guardianArray.length);
+        console.log('📋 Data:', guardianArray);
+        
+        if (guardianArray.length === 0) {
+          const detailedMessage = `❌ No guardians found!\n\n` +
+                                 `API returned: count=${data.count}, results=[]\n\n` +
+                                 `This confirms the issue:\n` +
+                                 `• No guardians are assigned to your teacher profile\n\n` +
+                                 `TO FIX THIS:\n` +
+                                 `1. Go to Django Admin: ${API_BASE.replace('/api', '/admin')}/guardian/guardian/\n` +
+                                 `2. Click on the guardian record\n` +
+                                 `3. Change the "Teacher" field to YOUR teacher profile\n` +
+                                 `4. Save and refresh this page`;
+          
+          alert(detailedMessage);
+          loadingIndicator.style.display = 'none';
+          return;
+        }
+        
+        allGuardianData = guardianArray;
+        filteredGuardianData = guardianArray;
+        
+        updateStatistics();
+        displayGuardianData(filteredGuardianData);
+        
+        loadingIndicator.style.display = 'none';
+        showAlert(`✅ Loaded ${guardianArray.length} guardian(s)!`, 'success');
+        
+      } catch (error) {
+        loadingIndicator.style.display = 'none';
+        console.error('❌ Error:', error);
+        alert('❌ Error: ' + error.message);
+      }
+    });
+
+    // ============================
+    // DEBUG API BUTTON
+    // ============================
+    document.getElementById('debugAPIBtn').addEventListener('click', async () => {
+      console.log('🐛 === COMPREHENSIVE DEBUG ===');
+      console.log('📍 Current Page: Guardians');
+      console.log('🔑 Auth Token:', authToken);
+      console.log('👤 Teacher ID from localStorage:', teacherId);
+      console.log('🌐 API Endpoint:', API_GUARDIAN);
+      console.log('');
+      
+      try {
+        // Test 1: Get Guardian API response
+        console.log('📡 TEST 1: Fetching Guardians...');
+        const guardianResponse = await fetch(API_GUARDIAN, {
+          headers: getAuthHeaders()
+        });
+        console.log('✅ Response Status:', guardianResponse.status);
+        
+        if (guardianResponse.ok) {
+          const guardianData = await guardianResponse.json();
+          console.log('📊 Guardian API Response:', guardianData);
+          console.log('📊 Count:', guardianData.count);
+          console.log('📊 Results Length:', guardianData.results?.length);
+          console.log('📋 Guardian Records:', guardianData.results);
+          console.log('');
+        }
+        
+        // Test 2: Get Teacher Profile Info
+        console.log('📡 TEST 2: Fetching Teacher Profile Info...');
+        const teacherResponse = await fetch('https://childtrack-backend.onrender.com/api/teacher/profile/', {
+          headers: getAuthHeaders()
+        });
+        
+        if (teacherResponse.ok) {
+          const teacherData = await teacherResponse.json();
+          console.log('✅ Teacher Profile Data:', teacherData);
+          console.log('👤 Your Teacher ID:', teacherData.id);
+          console.log('👤 Your Name:', teacherData.name);
+          console.log('👤 Your User ID:', teacherData.user);
+          console.log('');
+        } else {
+          console.log('⚠️ Teacher profile endpoint returned:', teacherResponse.status);
+          console.log('');
+        }
+        
+        // Test 3: Try alternative teacher endpoints
+        console.log('📡 TEST 3: Trying alternative teacher endpoints...');
+        const altEndpoints = [
+          'https://childtrack-backend.onrender.com/api/teacher/profiles/',
+          'https://childtrack-backend.onrender.com/api/teachers/',
+          'https://childtrack-backend.onrender.com/api/auth/user/'
+        ];
+        
+        for (const endpoint of altEndpoints) {
+          try {
+            const resp = await fetch(endpoint, { headers: getAuthHeaders() });
+            if (resp.ok) {
+              const data = await resp.json();
+              console.log(`✅ ${endpoint}:`, data);
+            } else {
+              console.log(`❌ ${endpoint}: ${resp.status}`);
+            }
+          } catch (err) {
+            console.log(`❌ ${endpoint}: ${err.message}`);
+          }
+        }
+        console.log('');
+        
+        // Test 4: Check all guardians in database (admin view)
+        console.log('📡 TEST 4: Checking database...');
+        const adminCheck = await fetch('https://childtrack-backend.onrender.com/admin/guardian/guardian/', {
+          headers: getAuthHeaders()
+        });
+        console.log('Admin page status:', adminCheck.status);
+        console.log('');
+        
+        // Summary
+        console.log('📋 === DIAGNOSIS SUMMARY ===');
+        const guardianResp = await fetch(API_GUARDIAN, { headers: getAuthHeaders() });
+        const guardianJson = await guardianResp.json();
+        
+        if (guardianJson.count === 0) {
+          console.log('❌ ISSUE: No guardians found for your teacher profile');
+          console.log('');
+          console.log('💡 SOLUTION STEPS:');
+          console.log('1. Open Django Admin: https://childtrack-backend.onrender.com/admin/');
+          console.log('2. Click on "Guardians" under GUARDIAN section');
+          console.log('3. You should see: "Sambling, Kyle Shanica Nicole V."');
+          console.log('4. Click on that guardian record');
+          console.log('5. Look for the "Teacher" dropdown field');
+          console.log('6. It should show teacher profiles from "Teacher profiles" table');
+          console.log('7. Select YOUR teacher profile from the dropdown');
+          console.log('8. Click Save');
+          console.log('9. Refresh this page');
+          console.log('');
+          console.log('🔍 TO FIND YOUR TEACHER PROFILE:');
+          console.log('1. In Django Admin, go to "Teacher profiles" under TEACHER section');
+          console.log('2. Find the profile linked to your username');
+          console.log('3. Note the ID or name');
+          console.log('4. Use that same profile when editing the Guardian record');
+          
+          alert(`❌ No guardians found for your teacher profile!\n\n` +
+                `QUICK FIX:\n` +
+                `1. Open Django Admin\n` +
+                `2. Go to GUARDIAN → Guardians\n` +
+                `3. Click on "Sambling, Kyle Shanica Nicole V."\n` +
+                `4. In "Teacher" dropdown, select YOUR teacher profile\n` +
+                `5. Save and refresh this page\n\n` +
+                `See console for detailed steps.`);
+        } else {
+          console.log('✅ SUCCESS: Found', guardianJson.count, 'guardian(s)');
+          console.log('Guardian data:', guardianJson.results);
+          alert(`✅ Found ${guardianJson.count} guardian(s)!\n\nCheck console for full details.`);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error during debug:', error);
+        alert('❌ Error: ' + error.message + '\n\nCheck console for details.');
+      }
+      
+      console.log('🐛 === END DEBUG ===');
+    });
+
+    // ============================
+    // DARK MODE TOGGLE
+    // ============================
+    const toggleBtn = document.getElementById("modeToggle");
+    const body = document.body;
+
+    function updateToggleText() {
+      toggleBtn.innerHTML = body.classList.contains("dark")
+        ? '<i class="fa-solid fa-sun"></i> Light Mode'
+        : '<i class="fa-solid fa-moon"></i> Dark Mode';
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      body.classList.toggle("dark");
+      body.classList.toggle("light");
+      updateToggleText();
+      
+      const mode = body.classList.contains("dark") ? "dark" : "light";
+      localStorage.setItem("theme", mode);
+    });
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+    body.classList.remove("light", "dark");
+    body.classList.add(savedTheme);
+    updateToggleText();
+
+    // ============================
+    // SIDEBAR COLLAPSE
+    // ============================
+    const sidebar = document.getElementById("sidebar");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const collapseBtnIcon = collapseBtn.querySelector("i");
+
+    collapseBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      
+      if (sidebar.classList.contains("collapsed")) {
+        collapseBtnIcon.classList.remove("fa-chevron-left");
+        collapseBtnIcon.classList.add("fa-chevron-right");
+        localStorage.setItem("sidebarCollapsed", "true");
+      } else {
+        collapseBtnIcon.classList.remove("fa-chevron-right");
+        collapseBtnIcon.classList.add("fa-chevron-left");
+        localStorage.setItem("sidebarCollapsed", "false");
+      }
+    });
+
+    const sidebarCollapsed = localStorage.getItem("sidebarCollapsed");
+    if (sidebarCollapsed === "true") {
+      sidebar.classList.add("collapsed");
+      collapseBtnIcon.classList.remove("fa-chevron-left");
+      collapseBtnIcon.classList.add("fa-chevron-right");
+    }
+
+    // ============================
+    // INITIALIZATION
+    // ============================
+    window.onload = async function() {
+      if (checkAuthentication()) {
+        displayUserInfo();
+        
+        console.log("🚀 Loading guardian data...");
+        await loadGuardianData();
+        
+        console.log("✅ Guardians page loaded successfully");
+      }
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Registration - CHILDTrack</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f8f9fa;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      transition: background 0.4s, color 0.4s;
+      padding: 20px;
+    }
+
+    body.dark {
+      background: #1e1e2f;
+      color: #e0e0e0;
+    }
+
+    .register-box {
+      background: #fff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+      transition: background 0.4s, color 0.4s;
+      animation: fadeIn 0.8s ease;
+    }
+
+    body.dark .register-box {
+      background: #2b2b3d;
+      color: #f1f1f1;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+    }
+
+    .register-box h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      color: #38c586;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 20px;
+      justify-content: space-between;
+    }
+
+    .form-row .col {
+      flex: 1;
+    }
+
+    .register-box label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .register-box input,
+    .register-box select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+
+    .register-box input:focus,
+    .register-box select:focus {
+      border: 1px solid #38c586;
+      outline: none;
+      box-shadow: 0 0 8px rgba(56,197,134,0.4);
+    }
+
+    body.dark .register-box input,
+    body.dark .register-box select {
+      background: #333;
+      border: 1px solid #555;
+      color: #eee;
+    }
+
+    .register-box button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .register-box button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .register-box button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .register-box p {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .register-box a {
+      color: #38c586;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    .register-box a:hover {
+      color: #2fa46e;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      height: 50px;
+      width: auto;
+    }
+
+    .toggle-btn {
+      background: #38c586;
+      color: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-btn:hover {
+      background: #2fa46e;
+      transform: scale(1.1);
+    }
+
+    body.dark .toggle-btn {
+      background: #2fa46e;
+    }
+
+    .alert {
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    body.dark .alert.success {
+      background: #155724;
+      color: #d4edda;
+    }
+
+    body.dark .alert.error {
+      background: #721c24;
+      color: #f8d7da;
+    }
+
+    .password-strength {
+      margin-top: -12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      height: 20px;
+    }
+
+    .password-strength.weak { color: #dc3545; }
+    .password-strength.medium { color: #ffc107; }
+    .password-strength.strong { color: #28a745; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+      }
+      
+      .register-box {
+        padding: 30px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <img src="logo.png" alt="Logo" class="logo">
+    <button class="toggle-btn" id="darkModeBtn">🌙</button>
+  </div>
+
+  <div class="register-box">
+    <h2>Teacher Registration</h2>
+    
+    <div id="alertBox" class="alert"></div>
+    
+    <form id="teacherRegisterForm">
+      <div class="form-row">
+        <div class="col">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="col">
+          <label for="age">Age *</label>
+          <input type="number" id="age" required min="18" max="100">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="col">
+          <label for="gender">Gender *</label>
+          <select id="gender" required>
+            <option value="">-- Select Gender --</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="section">Section & Grade Handling *</label>
+          <input type="text" id="section" placeholder="e.g. Grade 6 - Section A" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="col">
+          <label for="contact">Contact Number *</label>
+          <input type="tel" id="contact" required pattern="[0-9]{10,15}" placeholder="e.g. 09123456789">
+        </div>
+        <div class="col">
+          <label for="address">Address *</label>
+          <input type="text" id="address" required>
+        </div>
+      </div>
+
+      <label for="password">Password *</label>
+      <input type="password" id="password" required minlength="6">
+      <div class="password-strength" id="passwordStrength"></div>
+
+      <label for="confirmPassword">Confirm Password *</label>
+      <input type="password" id="confirmPassword" required minlength="6">
+
+      <button type="submit" id="submitBtn">Register</button>
+    </form>
+    <p>Already have an account? <a href="Teacherslogin.html">Login here</a></p>
+  </div>
+
+  <script>
+    const API_BASE = "https://childtrack-backend.onrender.com/api";
+
+    // Dark mode toggle
+    const darkModeBtn = document.getElementById('darkModeBtn');
+    darkModeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      darkModeBtn.textContent = document.body.classList.contains('dark') ? "☀️" : "🌙";
+    });
+
+    // Show alert message
+    function showAlert(message, type = 'success') {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = message;
+      alertBox.className = `alert ${type} show`;
+      
+      setTimeout(() => {
+        alertBox.classList.remove('show');
+      }, 5000);
+    }
+
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    const strengthIndicator = document.getElementById('passwordStrength');
+
+    passwordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      let strength = '';
+      let className = '';
+
+      if (password.length === 0) {
+        strength = '';
+      } else if (password.length < 6) {
+        strength = '⚠️ Too short (minimum 6 characters)';
+        className = 'weak';
+      } else if (password.length < 8) {
+        strength = '🟡 Weak - Consider adding more characters';
+        className = 'weak';
+      } else if (password.length < 10 && /[0-9]/.test(password) && /[a-zA-Z]/.test(password)) {
+        strength = '🟠 Medium - Good enough';
+        className = 'medium';
+      } else if (password.length >= 10 && /[0-9]/.test(password) && /[a-zA-Z]/.test(password) && /[!@#$%^&*]/.test(password)) {
+        strength = '🟢 Strong password!';
+        className = 'strong';
+      } else {
+        strength = '🟠 Medium';
+        className = 'medium';
+      }
+
+      strengthIndicator.textContent = strength;
+      strengthIndicator.className = `password-strength ${className}`;
+    });
+
+    // Register teacher via API
+    async function registerTeacher(teacherData) {
+      try {
+        console.log("📝 Attempting registration with:", { ...teacherData, password: "***" });
+
+        // Based on your URLs: path('register/', RegisterView.as_view(), name='register')
+        const endpoint = `${API_BASE}/register/`;
+        
+        console.log(`🔄 Trying endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(teacherData),
+        });
+
+        console.log(`📡 Response status: ${response.status}`);
+
+        // Get response text first
+        const text = await response.text();
+        
+        // If we get HTML error page (500), show clear error
+        if (text.includes('<!doctype html>') || text.includes('<html')) {
+          console.error(`⚠️ Server returned HTML error page`);
+          console.error("Full response:", text);
+          throw new Error('Server configuration error. Please ensure all required fields are provided correctly.');
+        }
+
+        // Log first 300 chars of response
+        console.log("📄 Response preview:", text.substring(0, 300));
+
+        // Try to parse as JSON
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error(`❌ Could not parse JSON:`, e.message);
+          throw new Error('Invalid response from server. Please try again.');
+        }
+
+        if (!response.ok) {
+          // Handle validation errors from Django REST Framework
+          if (data) {
+            // DRF returns field errors as object
+            const errorMessages = [];
+            for (const [field, messages] of Object.entries(data)) {
+              if (Array.isArray(messages)) {
+                errorMessages.push(`${field}: ${messages.join(', ')}`);
+              } else if (typeof messages === 'string') {
+                errorMessages.push(`${field}: ${messages}`);
+              } else if (typeof messages === 'object') {
+                // Nested errors
+                for (const [subField, subMessages] of Object.entries(messages)) {
+                  if (Array.isArray(subMessages)) {
+                    errorMessages.push(`${field}.${subField}: ${subMessages.join(', ')}`);
+                  }
+                }
+              }
+            }
+            
+            if (errorMessages.length > 0) {
+              throw new Error(errorMessages.join('\n'));
+            }
+          }
+          
+          // Fallback error message
+          const errorMsg = data.detail || data.message || data.error || `Registration failed with status ${response.status}`;
+          throw new Error(errorMsg);
+        }
+
+        // Success!
+        console.log("✅ Registration successful!");
+        console.log("✅ Response data:", data);
+        return { success: true, data };
+
+      } catch (error) {
+        console.error("❌ Registration error:", error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // Form validation
+    function validateForm(data) {
+      // Name validation
+      if (data.name.length < 2) {
+        throw new Error('Name must be at least 2 characters long');
+      }
+
+      // Age validation
+      if (data.age < 18 || data.age > 100) {
+        throw new Error('Age must be between 18 and 100');
+      }
+
+      // Contact validation
+      if (!/^[0-9]{10,15}$/.test(data.contact)) {
+        throw new Error('Contact number must be 10-15 digits');
+      }
+
+      // Password validation
+      if (data.password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      return true;
+    }
+
+    // Form submission
+    document.getElementById('teacherRegisterForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      // Check if passwords match
+      if (password !== confirmPassword) {
+        showAlert('❌ Passwords do not match!', 'error');
+        return;
+      }
+
+      // Gather form data - MUST match backend serializer exactly
+      const fullName = document.getElementById('name').value.trim();
+      const username = fullName.toLowerCase().replace(/\s+/g, '_'); // Create username from name
+      
+      const teacherData = {
+        username: username,           // Required by serializer
+        password: password,           // Required by serializer
+        name: fullName,              // Required by serializer (full name)
+        age: parseInt(document.getElementById('age').value),
+        gender: document.getElementById('gender').value,
+        section: document.getElementById('section').value.trim(),  // Use 'section' not 'grade'
+        contact: document.getElementById('contact').value.trim(),
+        address: document.getElementById('address').value.trim()
+      };
+
+      console.log("📋 Prepared registration data:", { ...teacherData, password: '***' });
+
+      // Validate form
+      try {
+        validateForm(teacherData);
+      } catch (error) {
+        showAlert('❌ ' + error.message, 'error');
+        return;
+      }
+
+      // Submit registration
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registering...';
+
+        const result = await registerTeacher(teacherData);
+
+        if (result.success) {
+          showAlert('✅ Registration successful! Redirecting to login...', 'success');
+          
+          // Clear form
+          document.getElementById('teacherRegisterForm').reset();
+          strengthIndicator.textContent = '';
+          
+          // Redirect to login after 2 seconds
+          setTimeout(() => {
+            window.location.href = "Teacher_s login.html";
+          }, 2000);
+        } else {
+          showAlert('❌ ' + result.error, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Register';
+        }
+      } catch (error) {
+        showAlert('❌ Registration failed: ' + error.message, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register';
+      }
+    });
+
+    // Real-time password confirmation validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const password = document.getElementById('password').value;
+      const confirmPassword = this.value;
+      
+      if (confirmPassword && password !== confirmPassword) {
+        this.style.borderColor = '#dc3545';
+      } else if (confirmPassword && password === confirmPassword) {
+        this.style.borderColor = '#28a745';
+      } else {
+        this.style.borderColor = '#ccc';
+      }
+    });
+  </script>
+</body>
+</html>

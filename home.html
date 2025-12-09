@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHILDTrack Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      color: #2c3e50;
+      transition: all 0.4s ease;
+      min-height: 100vh;
+    }
+    
+    body.dark {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+    }
+
+    /* Navbar Styles */
+    .navbar {
+      width: 100%;
+      background: linear-gradient(135deg, #38c586 0%, #2fa46e 100%);
+      color: white;
+      padding: 10px 25px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(56, 197, 134, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    body.dark .navbar {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .navbar .left {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    
+    .navbar .logo {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .navbar .logo img {
+      height: 35px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .navbar .logo i {
+      font-size: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .navbar a {
+      text-decoration: none;
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .navbar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.2);
+      transition: left 0.3s ease;
+    }
+
+    .navbar a:hover::before {
+      left: 0;
+    }
+    
+    .navbar a:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+
+    .navbar a.active {
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .navbar .right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .user-info .name {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .user-info .section {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .toggle-btn, .notif-btn, .logout-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .toggle-btn:hover, .notif-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .logout-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      border: none;
+    }
+
+    .logout-btn:hover {
+      background: linear-gradient(135deg, #ff5252, #e53935);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+    }
+
+    /* Main Container */
+    .main-container {
+      display: flex;
+      margin-top: 60px;
+      min-height: calc(100vh - 60px);
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 400px;
+      background: rgba(255,255,255,0.95);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 80px;
+      height: calc(100vh - 100px);
+      overflow-y: auto;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .sidebar.collapsed {
+      width: 70px;
+      padding: 25px 15px;
+    }
+    
+    body.dark .sidebar {
+      background: rgba(30,41,59,0.95);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+
+    .sidebar h2 {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 24px;
+      font-weight: 700;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .sidebar.collapsed h2 {
+      opacity: 0;
+      display: none;
+    }
+
+    .collapse-btn {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(56,197,134,0.3);
+    }
+    
+    .collapse-btn:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 6px 20px rgba(56,197,134,0.4);
+    }
+
+    .calendar-wrapper {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 16px;
+      padding: 15px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+      transition: opacity 0.3s;
+      margin-bottom: 20px;
+    }
+    
+    .sidebar.collapsed .calendar-wrapper {
+      opacity: 0;
+      display: none;
+    }
+    
+    body.dark .calendar-wrapper {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+    }
+
+    .calendar-wrapper iframe {
+      border: 0;
+      border-radius: 12px;
+      width: 100%;
+      height: 600px;
+    }
+
+    .calendar-event-section {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+      animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sidebar.collapsed .calendar-event-section {
+      opacity: 0;
+      display: none;
+    }
+
+    body.dark .calendar-event-section {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+    }
+
+    .calendar-event-section h3 {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 18px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .event-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .event-form input,
+    .event-form textarea,
+    .event-form select {
+      padding: 12px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background: white;
+      color: #2c3e50;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-weight: 500;
+    }
+
+    body.dark .event-form input,
+    body.dark .event-form textarea,
+    body.dark .event-form select {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-color: #334155;
+    }
+
+    .event-form input:focus,
+    .event-form textarea:focus,
+    .event-form select:focus {
+      outline: none;
+      border-color: #38c586;
+      box-shadow: 0 0 0 4px rgba(56,197,134,0.1);
+      transform: translateY(-2px);
+    }
+
+    .event-form textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .add-event-btn {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(56,197,134,0.3);
+    }
+
+    .add-event-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56,197,134,0.4);
+    }
+
+    .events-list {
+      margin-top: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .event-item {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border-left: 4px solid #38c586;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .event-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 6px 20px rgba(56,197,134,0.15);
+    }
+
+    body.dark .event-item {
+      background: #1e293b;
+    }
+
+    .event-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .event-title {
+      font-weight: 700;
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 15px;
+    }
+
+    .event-date {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    body.dark .event-date {
+      color: #94a3b8;
+    }
+
+    .event-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    body.dark .event-desc {
+      color: #cbd5e1;
+    }
+
+    .delete-event-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      color: white;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(255,107,107,0.3);
+    }
+
+    .delete-event-btn:hover {
+      transform: scale(1.15) rotate(90deg);
+      box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+    }
+
+    /* Content Area */
+    .content {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .content::before {
+      content: '';
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.15;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body.has-wallpaper .content::before {
+      opacity: 0.25;
+    }
+
+    .content h1 {
+      margin-bottom: 30px;
+      font-size: 36px;
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      animation: slideInDown 0.6s ease;
+    }
+
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(56,197,134,0.1);
+    }
+
+    body.dark .stat-card {
+      background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(30,41,59,0.85));
+      border-color: rgba(56,197,134,0.2);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(56,197,134,0.2);
+    }
+
+    .stat-card .icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-card .value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #38c586;
+      margin-bottom: 5px;
+    }
+
+    .stat-card .label {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Dashboard Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      animation: fadeInUp 0.6s ease 0.4s both;
+    }
+
+    .card {
+      border-radius: 20px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      box-shadow: 0 8px 30px rgba(56,197,134,0.3);
+      text-decoration: none;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: scale(0);
+      transition: transform 0.6s ease;
+    }
+
+    .card:hover::before {
+      transform: scale(1);
+    }
+    
+    .card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 50px rgba(56,197,134,0.4);
+    }
+
+    .card .icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      display: block;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Wallpaper Controls */
+    .wallpaper-controls {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 100;
+      display: flex;
+      gap: 10px;
+    }
+
+    .wallpaper-btn {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 6px 20px rgba(56,197,134,0.3);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wallpaper-btn:hover {
+      transform: scale(1.15) rotate(10deg);
+      box-shadow: 0 8px 30px rgba(56,197,134,0.4);
+    }
+
+    body.dark .wallpaper-btn {
+      background: linear-gradient(135deg, #2fa46e, #248a5c);
+    }
+
+    #wallpaperInput {
+      display: none;
+    }
+
+    .wallpaper-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .wallpaper-modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+      padding: 35px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideInUp 0.3s ease;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    body.dark .modal-content {
+      background: linear-gradient(135deg, rgba(30,41,59,0.98), rgba(30,41,59,0.95));
+    }
+
+    .modal-content h3 {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      font-size: 26px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-content p {
+      margin-bottom: 15px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 13px;
+    }
+
+    .modal-btn.primary {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      color: white;
+      box-shadow: 0 4px 15px rgba(56,197,134,0.3);
+    }
+
+    .modal-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56,197,134,0.4);
+    }
+
+    .modal-btn.secondary {
+      background: #e2e8f0;
+      color: #2c3e50;
+    }
+
+    .modal-btn.secondary:hover {
+      background: #cbd5e1;
+    }
+
+    body.dark .modal-btn.secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    body.dark .modal-btn.secondary:hover {
+      background: #0f172a;
+    }
+
+    /* Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    body.dark ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #2fa46e, #248a5c);
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 380px;
+      }
+      
+      .sidebar.collapsed {
+        width: 70px;
+      }
+      
+      .main-container {
+        padding: 15px;
+      }
+      
+      .wallpaper-controls {
+        bottom: 20px;
+        right: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+        padding: 10px;
+      }
+      
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        top: 0;
+      }
+      
+      .sidebar.collapsed {
+        height: 80px;
+        width: 100%;
+      }
+      
+      .navbar .left {
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      
+      .navbar a span {
+        display: none;
+      }
+      
+      .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        padding: 8px 12px;
+      }
+      
+      .content h1 {
+        font-size: 28px;
+      }
+      
+      .wallpaper-controls {
+        bottom: 15px;
+        right: 15px;
+      }
+      
+      .wallpaper-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="light">
+
+  <div class="navbar">
+    <div class="left">
+      <div class="logo">
+        <img src="logo.png" alt="CHILDTrack Logo">
+      </div>
+      <a href="attendance.html">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span>Attendance</span>
+      </a>
+      <a href="absences.html">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Absences</span>
+      </a>
+      <a href="Dropouts.html">
+        <i class="fa-solid fa-user-slash"></i>
+        <span>Dropouts</span>
+      </a>
+      <a href="unathorized.html">
+        <i class="fa-solid fa-ban"></i>
+        <span>Guardians</span>
+      </a>
+      <a href="parentqr.html" class="active"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
+    </div>
+    <div class="right">
+      <div class="user-info" id="userInfo">
+        <div>
+          <div class="name" id="userName">Loading...</div>
+          <div class="section" id="userSection"></div>
+        </div>
+      </div>
+      <button class="notif-btn" onclick="location.href='notification.html'">
+        <i class="fa-solid fa-bell"></i> Notifications
+      </button>
+      <button class="toggle-btn" id="modeToggle"><i class="fa-solid fa-moon"></i> Dark Mode</button>
+      <button class="logout-btn" id="logoutBtn"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fa-solid fa-calendar-days"></i> Calendar</h2>
+        <button class="collapse-btn" id="collapseBtn" title="Toggle Calendar">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+      </div>
+      
+      <div class="calendar-wrapper">
+        <iframe 
+          src="https://calendar.google.com/calendar/embed?src=en.philippines%23holiday%40group.v.calendar.google.com&ctz=Asia%2FManila" 
+          frameborder="0" 
+          scrolling="no">
+        </iframe>
+      </div>
+
+      <div class="calendar-event-section">
+        <h3><i class="fa-solid fa-list"></i> Upcoming Events</h3>
+        <button class="add-event-btn" id="openEventModalBtn">
+          <i class="fa-solid fa-plus"></i> Add New Event
+        </button>
+        <div class="events-list" id="eventsList"></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <h1>Dashboard</h1>
+      <div class="cards">
+        <a href="attendance.html" class="card">
+          <i class="fa-solid fa-clipboard-check icon"></i>
+          Attendance
+        </a>
+        <a href="absences.html" class="card">
+          <i class="fa-solid fa-clipboard-list icon"></i>
+          Absences
+        </a>
+        <a href="dropouts.html" class="card">
+          <i class="fa-solid fa-user-slash icon"></i>
+          Dropouts
+        </a>
+        <a href="whattttt.html" class="card">
+          <i class="fa-solid fa-ban icon"></i>
+          Guardians
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <div class="wallpaper-controls">
+    <button class="wallpaper-btn" id="uploadWallpaperBtn" title="Upload Wallpaper">
+      <i class="fa-solid fa-image"></i>
+    </button>
+    <button class="wallpaper-btn" id="removeWallpaperBtn" title="Remove Wallpaper">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+  </div>
+
+  <input type="file" id="wallpaperInput" accept="image/*">
+
+  <div class="wallpaper-modal" id="wallpaperModal">
+    <div class="modal-content">
+      <h3><i class="fa-solid fa-image"></i> Custom Wallpaper</h3>
+      <p>You can upload a custom wallpaper to personalize your dashboard. The image will be displayed as a background with transparency.</p>
+      <p><strong>Recommended:</strong> Use high-quality images (1920x1080 or higher) for best results.</p>
+      <div class="modal-buttons">
+        <button class="modal-btn secondary" id="closeModalBtn">Cancel</button>
+        <button class="modal-btn primary" id="selectFileBtn">Choose File</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Modal -->
+  <div class="wallpaper-modal" id="eventModal">
+    <div class="modal-content">
+      <h3><i class="fa-solid fa-calendar-plus"></i> Add New Event</h3>
+      <div class="event-form">
+        <input type="text" id="eventTitle" placeholder="Event Title" required>
+        <input type="date" id="eventDate" required>
+        <input type="time" id="eventTime" required>
+        <input type="text" id="eventLocation" placeholder="Location (optional)">
+        <textarea id="eventDescription" placeholder="Event Description (optional)"></textarea>
+        <select id="eventType">
+          <option value="Other">Other</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Conference">Conference</option>
+          <option value="School Event">School Event</option>
+          <option value="Reminder">Reminder</option>
+        </select>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn secondary" id="closeEventModalBtn">Cancel</button>
+        <button class="modal-btn primary" id="saveEventBtn">
+          <i class="fa-solid fa-save"></i> Save Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================
+    // AUTHENTICATION CHECK
+    // ============================
+    function checkAuthentication() {
+      const authToken = localStorage.getItem("authToken") || 
+                       localStorage.getItem("auth_token") || 
+                       localStorage.getItem("token");
+      
+      const teacherId = localStorage.getItem("teacherId") || 
+                       localStorage.getItem("teacher_id") || 
+                       localStorage.getItem("id");
+
+      // Debug: Log all localStorage keys to see what's stored
+      console.log("🔍 All localStorage keys:", Object.keys(localStorage));
+      console.log("🔍 localStorage content:", {
+        authToken: authToken ? "***" + authToken.slice(-4) : "none",
+        teacherId: teacherId,
+        teacherName: localStorage.getItem("teacherName"),
+        teacher_id: localStorage.getItem("teacher_id"),
+        id: localStorage.getItem("id")
+      });
+
+      console.log("🔐 Authentication check:", {
+        hasToken: !!authToken,
+        hasTeacherId: !!teacherId && teacherId !== "undefined",
+        token: authToken ? "***" + authToken.slice(-4) : "none",
+        teacherId: teacherId
+      });
+
+      if (!authToken) {
+        console.log("❌ No authentication token found, redirecting to login...");
+        alert("⚠️ Please login first to access the dashboard.");
+        window.location.href = "teacherslogin.html";
+        return false;
+      }
+
+      return true;
+    }
+
+    // ============================
+    // USER INFO DISPLAY
+    // ============================
+    function displayUserInfo() {
+      const teacherName = localStorage.getItem("teacherName") || 
+                         localStorage.getItem("teacher_name") || 
+                         localStorage.getItem("name") || 
+                         "Teacher";
+      
+      const teacherSection = localStorage.getItem("teacherSection") || 
+                            localStorage.getItem("teacher_section") || 
+                            localStorage.getItem("grade") || 
+                            localStorage.getItem("section") || 
+                            "";
+
+      document.getElementById("userName").textContent = teacherName;
+      document.getElementById("userSection").textContent = teacherSection ? `Grade ${teacherSection}` : "";
+
+      console.log("👤 User info displayed:", { teacherName, teacherSection });
+    }
+
+    // ============================
+    // LOGOUT FUNCTIONALITY
+    // ============================
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      if (confirm("Are you sure you want to logout?")) {
+        console.log("🚪 Logging out...");
+        
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("token");
+        localStorage.removeItem("teacherId");
+        localStorage.removeItem("teacher_id");
+        localStorage.removeItem("id");
+        localStorage.removeItem("teacherName");
+        localStorage.removeItem("teacher_name");
+        localStorage.removeItem("name");
+        localStorage.removeItem("teacherSection");
+        localStorage.removeItem("teacher_section");
+        localStorage.removeItem("grade");
+        localStorage.removeItem("section");
+        localStorage.removeItem("userData");
+
+        alert("✅ Successfully logged out!");
+        window.location.href = "teacherslogin.html";
+      }
+    });
+
+    // ============================
+    // CALENDAR EVENTS WITH API
+    // ============================
+    const API_BASE_URL = 'https://childtrack-backend.onrender.com/api/parents';
+    let calendarEvents = [];
+    let currentTeacherName = null;
+   
+    async function loadEvents() {
+      const eventsList = document.getElementById('eventsList');
+      eventsList.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Loading events...</div>';
+      
+      try {
+        const authToken = localStorage.getItem("authToken") || 
+                         localStorage.getItem("auth_token") || 
+                         localStorage.getItem("token");
+        
+        // Get teacher name for filtering events
+        let teacherName = localStorage.getItem("teacherName") || 
+                         localStorage.getItem("teacher_name") || 
+                         localStorage.getItem("name");
+        
+        // Validate that teacherName is actually a valid value (not "undefined" string or null)
+        if (!teacherName || teacherName === "undefined" || teacherName === "null") {
+          console.warn("⚠️ Teacher name not found in localStorage. Loading all events instead.");
+          teacherName = null;
+        }
+        
+        currentTeacherName = teacherName;
+        
+        console.log("📋 Loading events with teacher name:", currentTeacherName);
+        
+        // Add teacher_name filter to GET request only if valid
+        const url = currentTeacherName 
+          ? `${API_BASE_URL}/events/?teacher_name=${encodeURIComponent(currentTeacherName)}`
+          : `${API_BASE_URL}/events/`;
+        
+        console.log("🌐 Fetching from URL:", url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("❌ API Error Response:", errorText);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("✅ Events loaded successfully:", data);
+        calendarEvents = data;
+        
+        displayEvents();
+      } catch (error) {
+        console.error('❌ Error loading events:', error);
+        eventsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff6b6b;">Failed to load events. Please try again.</div>';
+      }
+    }
+
+    function displayEvents() {
+      const eventsList = document.getElementById('eventsList');
+      eventsList.innerHTML = '';
+      
+      if (calendarEvents.length === 0) {
+        eventsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #64748b;">No events scheduled</div>';
+        return;
+      }
+      
+      calendarEvents.sort((a, b) => {
+        const dateA = new Date(a.scheduled_at || `${a.date} ${a.time}`);
+        const dateB = new Date(b.scheduled_at || `${b.date} ${b.time}`);
+        return dateA - dateB;
+      });
+      
+      calendarEvents.forEach((event) => {
+        const eventItem = document.createElement('div');
+        eventItem.className = 'event-item';
+        
+        const eventDate = new Date(event.scheduled_at || `${event.date} ${event.time}`);
+        const formattedDate = eventDate.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+        const formattedTime = eventDate.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        
+        eventItem.innerHTML = `
+          <div class="event-item-header">
+            <div>
+              <div class="event-title">${event.title}</div>
+              <div class="event-date">
+                <i class="fa-solid fa-calendar"></i> ${formattedDate} 
+                <i class="fa-solid fa-clock"></i> ${formattedTime}
+              </div>
+              ${event.location ? `<div class="event-desc"><i class="fa-solid fa-location-dot"></i> ${event.location}</div>` : ''}
+              ${event.description ? `<div class="event-desc">${event.description}</div>` : ''}
+            </div>
+            <button class="delete-event-btn" onclick="deleteEvent(${event.id})" title="Delete Event">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+        `;
+        eventsList.appendChild(eventItem);
+      });
+    }
+
+    document.getElementById('openEventModalBtn').addEventListener('click', () => {
+      document.getElementById('eventModal').classList.add('active');
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('eventDate').value = today;
+    });
+
+    document.getElementById('closeEventModalBtn').addEventListener('click', () => {
+      document.getElementById('eventModal').classList.remove('active');
+      clearEventForm();
+    });
+
+    document.getElementById('eventModal').addEventListener('click', (e) => {
+      if (e.target.id === 'eventModal') {
+        document.getElementById('eventModal').classList.remove('active');
+        clearEventForm();
+      }
+    });
+
+    function clearEventForm() {
+      document.getElementById('eventTitle').value = '';
+      document.getElementById('eventDate').value = '';
+      document.getElementById('eventTime').value = '';
+      document.getElementById('eventLocation').value = '';
+      document.getElementById('eventDescription').value = '';
+      document.getElementById('eventType').value = 'Other';
+    }
+
+    document.getElementById('saveEventBtn').addEventListener('click', async () => {
+      const title = document.getElementById('eventTitle').value.trim();
+      const date = document.getElementById('eventDate').value;
+      const time = document.getElementById('eventTime').value;
+      const location = document.getElementById('eventLocation').value.trim();
+      const description = document.getElementById('eventDescription').value.trim();
+      const eventType = document.getElementById('eventType').value;
+
+      if (!title || !date || !time) {
+        alert('Please fill in event title, date, and time.');
+        return;
+      }
+
+      const scheduledAt = `${date}T${time}:00`;
+
+      // Get teacher name for the event
+      const teacherName = localStorage.getItem("teacherName") || 
+                         localStorage.getItem("teacher_name") || 
+                         localStorage.getItem("name");
+
+      const eventData = {
+        title: title,
+        description: description || '',
+        event_type: eventType,
+        scheduled_at: scheduledAt,
+        location: location || '',
+        teacher_name: teacherName // Add teacher_name to the event data
+      };
+
+      console.log('📝 Creating event with data:', eventData);
+
+      try {
+        const authToken = localStorage.getItem("authToken") || 
+                         localStorage.getItem("auth_token") || 
+                         localStorage.getItem("token");
+
+        console.log('🔑 Auth token for POST:', authToken ? '***' + authToken.slice(-4) : 'MISSING');
+
+        // Build headers - try different token formats
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (authToken) {
+          // If token already has "Token " prefix, use as-is, otherwise add it
+          if (authToken.startsWith('Token ') || authToken.startsWith('Bearer ')) {
+            headers['Authorization'] = authToken;
+          } else {
+            // Try Token format (common for DRF TokenAuthentication)
+            headers['Authorization'] = `Token ${authToken}`;
+          }
+        }
+
+        console.log('📤 Request headers:', headers);
+
+        const response = await fetch(`${API_BASE_URL}/events/`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(eventData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ API Error:', errorData);
+          throw new Error(`Failed to create event: ${response.status} - ${JSON.stringify(errorData)}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ Event created successfully:', result);
+        document.getElementById('eventModal').classList.remove('active');
+        clearEventForm();
+        await loadEvents();
+        alert('✅ Event added successfully!');
+      } catch (error) {
+        console.error('❌ Error creating event:', error);
+        alert('❌ Failed to add event. ' + error.message);
+      }
+    });
+
+    async function deleteEvent(eventId) {
+      if (!confirm('Are you sure you want to delete this event?')) {
+        return;
+      }
+
+      try {
+        const authToken = localStorage.getItem("authToken") || 
+                         localStorage.getItem("auth_token") || 
+                         localStorage.getItem("token");
+
+        const response = await fetch(`${API_BASE_URL}/events/${eventId}/`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete event');
+        }
+
+        console.log('Event deleted successfully');
+        await loadEvents();
+        alert('✅ Event deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('❌ Failed to delete event. Please try again.');
+      }
+    }
+
+    // ============================
+    // DARK MODE
+    // ============================
+    const toggleBtn = document.getElementById("modeToggle");
+    const body = document.body;
+
+    function updateToggleText() {
+      toggleBtn.innerHTML = body.classList.contains("dark")
+        ? '<i class="fa-solid fa-sun"></i> Light Mode'
+        : '<i class="fa-solid fa-moon"></i> Dark Mode';
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      body.classList.toggle("dark");
+      body.classList.toggle("light");
+      updateToggleText();
+      
+      const mode = body.classList.contains("dark") ? "dark" : "light";
+      localStorage.setItem("theme", mode);
+    });
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+    body.classList.remove("light", "dark");
+    body.classList.add(savedTheme);
+    updateToggleText();
+
+    // ============================
+    // SIDEBAR COLLAPSE
+    // ============================
+    const sidebar = document.getElementById("sidebar");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const collapseBtnIcon = collapseBtn.querySelector("i");
+
+    collapseBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      
+      if (sidebar.classList.contains("collapsed")) {
+        collapseBtnIcon.classList.remove("fa-chevron-left");
+        collapseBtnIcon.classList.add("fa-chevron-right");
+        localStorage.setItem("sidebarCollapsed", "true");
+      } else {
+        collapseBtnIcon.classList.remove("fa-chevron-right");
+        collapseBtnIcon.classList.add("fa-chevron-left");
+        localStorage.setItem("sidebarCollapsed", "false");
+      }
+    });
+
+    const sidebarCollapsed = localStorage.getItem("sidebarCollapsed");
+    if (sidebarCollapsed === "true") {
+      sidebar.classList.add("collapsed");
+      collapseBtnIcon.classList.remove("fa-chevron-left");
+      collapseBtnIcon.classList.add("fa-chevron-right");
+    }
+
+    // ============================
+    // WALLPAPER CONTROLS
+    // ============================
+    const uploadWallpaperBtn = document.getElementById("uploadWallpaperBtn");
+    const removeWallpaperBtn = document.getElementById("removeWallpaperBtn");
+    const wallpaperInput = document.getElementById("wallpaperInput");
+    const wallpaperModal = document.getElementById("wallpaperModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const selectFileBtn = document.getElementById("selectFileBtn");
+
+    uploadWallpaperBtn.addEventListener("click", () => {
+      wallpaperModal.classList.add("active");
+    });
+
+    closeModalBtn.addEventListener("click", () => {
+      wallpaperModal.classList.remove("active");
+    });
+
+    selectFileBtn.addEventListener("click", () => {
+      wallpaperModal.classList.remove("active");
+      wallpaperInput.click();
+    });
+
+    wallpaperModal.addEventListener("click", (e) => {
+      if (e.target === wallpaperModal) {
+        wallpaperModal.classList.remove("active");
+      }
+    });
+
+    wallpaperInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const imageUrl = event.target.result;
+          
+          const style = document.createElement("style");
+          style.id = "wallpaper-style";
+          style.textContent = `.content::before { background-image: url('${imageUrl}') !important; }`;
+          
+          const existingStyle = document.getElementById("wallpaper-style");
+          if (existingStyle) {
+            existingStyle.remove();
+          }
+          document.head.appendChild(style);
+          
+          body.classList.add("has-wallpaper");
+          localStorage.setItem("wallpaper", imageUrl);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeWallpaperBtn.addEventListener("click", () => {
+      const existingStyle = document.getElementById("wallpaper-style");
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      body.classList.remove("has-wallpaper");
+      localStorage.removeItem("wallpaper");
+    });
+
+    const savedWallpaper = localStorage.getItem("wallpaper");
+    if (savedWallpaper) {
+      const style = document.createElement("style");
+      style.id = "wallpaper-style";
+      style.textContent = `.content::before { background-image: url('${savedWallpaper}') !important; }`;
+      document.head.appendChild(style);
+      body.classList.add("has-wallpaper");
+    }
+
+    // ============================
+    // INITIALIZATION
+    // ============================
+    window.onload = function() {
+      if (checkAuthentication()) {
+        displayUserInfo();
+        loadEvents();
+        console.log("✅ Dashboard loaded successfully");
+      }
+    };
+  </script>
+
+</body>
+</html>
