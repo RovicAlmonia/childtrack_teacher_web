@@ -631,6 +631,58 @@
       border-left: 5px solid #dc3545;
     }
 
+
+    /* ============================
+   PHOTO MODAL / LIGHTBOX
+============================ */
+.photo-modal {
+  display: none;
+  position: fixed;
+  z-index: 5000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.photo-modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  animation: zoomIn 0.3s ease;
+}
+
+.photo-modal-close {
+  position: absolute;
+  top: 25px;
+  right: 35px;
+  font-size: 42px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.photo-modal-close:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); }
+  to   { transform: scale(1); }
+}
+
+
+
     /* Scrollbar Styles */
     ::-webkit-scrollbar {
       width: 10px;
@@ -660,7 +712,7 @@
       <a href="attendance.html" class="active"><i class="fa-solid fa-clipboard-check"></i><span>Attendance</span></a>
       <a href="absences.html"><i class="fa-solid fa-clipboard-list"></i><span>Absences</span></a>
       <a href="dropouts.html"><i class="fa-solid fa-user-slash"></i><span>Dropouts</span></a>
-      <a href="guardians.html"><i class="fa-solid fa-ban"></i><span>Guardian</span></a>
+      <a href="unauthorized.html"><i class="fa-solid fa-ban"></i><span>Guardian</span></a>
       <a href="parentqr.html" class="active"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
     </div>
     <div class="right">
@@ -677,6 +729,13 @@
       <button class="logout-btn" id="logoutBtn"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
     </div>
   </div>
+
+  <!-- Image Preview Modal -->
+<div id="photoModal" class="photo-modal">
+  <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
+  <img class="photo-modal-content" id="photoModalImg">
+</div>
+
 
   <div class="main-container">
     <aside class="sidebar" id="sidebar">
@@ -787,6 +846,7 @@
         <table class="attendance-table" id="attendanceTable">
           <thead>
             <tr>
+              <th>Photo</th>
               <th>Student Name</th>
               <th>Date</th>
               <th>Time</th>
@@ -972,9 +1032,11 @@
     const API_ATTENDANCE = `${API_BASE}/attendance`;
     const API_PUBLIC_ATTENDANCE = `${API_BASE}/attendance/public`;
     const API_BULK_UPDATE = `${API_BASE}/attendance/bulk-update`;
+    const API_SCAN_PHOTOS = `${API_BASE}/scan-photos`;
 
     let editId = null;
     let allAttendanceData = [];
+    let scanPhotosData = {};
 
     function getAuthHeaders() {
       const headers = {
@@ -1009,6 +1071,65 @@
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // ============================
+    // FETCH SCAN PHOTOS
+    // ============================
+    async function loadScanPhotos() {
+      try {
+        console.log('Fetching scan photos from:', API_SCAN_PHOTOS);
+        
+        const headers = getAuthHeaders();
+        console.log('Using headers:', headers);
+        
+        let response = await fetch(API_SCAN_PHOTOS, {
+          method: 'GET',
+          headers: headers
+        });
+        
+        console.log('Scan photos response status:', response.status);
+        
+        if (!response.ok && response.status === 404) {
+          console.log('Trying with trailing slash...');
+          response = await fetch(`${API_SCAN_PHOTOS}/`, {
+            method: 'GET',
+            headers: headers
+          });
+        }
+        
+        if (!response.ok) {
+          console.warn(`Scan photos API returned ${response.status}. Photos will not be displayed.`);
+          return {};
+        }
+        
+        const photos = await response.json();
+        console.log('✅ Scan photos loaded successfully:', photos);
+        
+        if (!Array.isArray(photos)) {
+          console.warn('Scan photos response is not an array:', photos);
+          return {};
+        }
+        
+        // Create a map of student_name -> photo URL for quick lookup
+        const photoMap = {};
+        photos.forEach(photo => {
+          const studentName = photo.student_name || photo.name;
+          const photoUrl = photo.photo || photo.scan_photo || photo.image || photo.url;
+          
+          if (studentName && photoUrl) {
+            photoMap[studentName.toLowerCase().trim()] = photoUrl;
+            console.log(`Mapped photo for: ${studentName} -> ${photoUrl}`);
+          }
+        });
+        
+        console.log('✅ Photo map created with', Object.keys(photoMap).length, 'students');
+        return photoMap;
+      } catch (error) {
+        console.error('❌ Error fetching scan photos:', error);
+        console.error('Error details:', error.message);
+        return {};
+      }
     }
 
     // ============================
@@ -1049,6 +1170,11 @@
         loadingIndicator.style.display = 'block';
         tbody.innerHTML = "";
         
+        // Load scan photos first
+        scanPhotosData = await loadScanPhotos();
+        console.log('Photo map created:', Object.keys(scanPhotosData).length, 'students');
+        
+        // Then load attendance data
         let response = await fetch(API_PUBLIC_ATTENDANCE, {
           headers: getAuthHeaders()
         });
@@ -1107,7 +1233,7 @@
           const message = dateToFilter ? 
             `No attendance records found for ${formatDate(dateToFilter)}.` : 
             'No attendance records yet. Add your first record above.';
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; opacity: 0.7; font-size: 16px;"><i class="fa-solid fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>${message}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; opacity: 0.7; font-size: 16px;"><i class="fa-solid fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>${message}</td></tr>`;
           return;
         }
         
@@ -1124,6 +1250,17 @@
           const status = row.status || 'Unknown';
           const statusClass = status.toLowerCase().replace(/\s+/g, '').replace('-', '');
           
+          // Get photo from scan photos data using student name
+          const rawPhoto = scanPhotosData[studentName.toLowerCase().trim()] || '';
+          const scanPhoto = normalizePhotoSrc(rawPhoto);
+
+          
+          if (scanPhoto) {
+            console.log(`✅ Found photo for ${studentName}:`, scanPhoto);
+          } else {
+            console.log(`⚠️ No photo found for ${studentName}`);
+          }
+          
           // Add late indicator if applicable
           let statusDisplay = status;
           let statusBadgeExtra = '';
@@ -1132,6 +1269,19 @@
           }
           
           tr.innerHTML = `
+            <td style="padding: 12px;">
+              ${scanPhoto ? 
+                `<img src="${scanPhoto}" 
+     alt="${studentName}" 
+     style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover; border: 3px solid #38c586; box-shadow: 0 4px 12px rgba(56,197,134,0.3); cursor: pointer;" 
+     onclick="openPhotoModal('${scanPhoto}')" 
+     title="Click to enlarge photo">` 
+                : 
+                `<div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #e2e8f0, #cbd5e1); display: flex; align-items: center; justify-content: center; border: 2px solid #94a3b8;">
+                  <i class="fa-solid fa-user" style="font-size: 24px; color: #64748b;"></i>
+                </div>`
+              }
+            </td>
             <td>
               <strong style="font-size: 15px;">${studentName}</strong>
               ${studentLrn ? `<br><small style="color: #64748b; font-weight: 500;"><i class="fa-solid fa-id-card"></i> LRN: ${studentLrn}</small>` : ''}
@@ -1157,7 +1307,7 @@
         loadingIndicator.style.display = 'none';
         console.error('Error loading attendance:', error);
         showAlert('Error loading attendance records: ' + error.message, 'error');
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: #dc3545;"><i class="fa-solid fa-triangle-exclamation" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>Failed to load records. Please try again.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; color: #dc3545;"><i class="fa-solid fa-triangle-exclamation" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>Failed to load records. Please try again.</td></tr>`;
       }
     }
 
@@ -1490,7 +1640,52 @@
         console.log("✅ Attendance page loaded successfully - showing today's records");
       }
     };
+
+
+    function normalizePhotoSrc(photo) {
+  if (!photo) return '';
+
+  // Already a full URL or data URL
+  if (photo.startsWith('http') || photo.startsWith('data:image')) {
+    return photo;
+  }
+
+  // Assume raw Base64 → convert to data URL
+  return `data:image/jpeg;base64,${photo}`;
+}
+
+// ============================
+// PHOTO MODAL FUNCTIONS
+// ============================
+function openPhotoModal(src) {
+  const modal = document.getElementById('photoModal');
+  const modalImg = document.getElementById('photoModalImg');
+
+  modalImg.src = src;
+  modal.style.display = 'flex';
+}
+
+// Close modal
+function closePhotoModal() {
+  const modal = document.getElementById('photoModal');
+  modal.style.display = 'none';
+  document.getElementById('photoModalImg').src = '';
+}
+
+// Close on ESC key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closePhotoModal();
+  }
+});
+
+// Close when clicking outside the image
+document.getElementById('photoModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'photoModal') {
+    closePhotoModal();
+  }
+});
+
   </script>
 </body>
-
 </html>
