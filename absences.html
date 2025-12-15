@@ -317,6 +317,25 @@
       background-clip: text;
     }
 
+    /* Warning Badge for Unscanned */
+    .warning-badge {
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      color: #856404;
+      padding: 8px 16px;
+      border-radius: 25px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+      animation: pulseWarning 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulseWarning {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
     /* Filter Container */
     .filter-container { 
       background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
@@ -328,6 +347,7 @@
       gap: 20px; 
       align-items: center; 
       flex-wrap: wrap;
+      justify-content: space-between;
       border: 1px solid rgba(230,57,70,0.1);
       animation: fadeInUp 0.6s ease 0.3s both;
     }
@@ -381,13 +401,25 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(100,116,139,0.4);
     }
-    #debugAPIBtn {
-      background: linear-gradient(135deg, #007bff, #0056b3);
-      box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+    #markAbsentBtn {
+      background: linear-gradient(135deg, #ff9800, #ff6b6b);
+      box-shadow: 0 4px 15px rgba(255,152,0,0.3);
     }
-    #debugAPIBtn:hover {
+    #markAbsentBtn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+      box-shadow: 0 6px 20px rgba(255,152,0,0.4);
+    }
+    #markAbsentBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #refreshStatsBtn {
+      background: linear-gradient(135deg, #38c586, #2fa46e);
+      box-shadow: 0 4px 15px rgba(56,197,134,0.3);
+    }
+    #refreshStatsBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56,197,134,0.4);
     }
 
     /* Table Container */
@@ -616,6 +648,11 @@
       color: #721c24; 
       border-left: 5px solid #dc3545;
     }
+    .alert.warning {
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      color: #856404;
+      border-left: 5px solid #ffc107;
+    }
 
     /* Scrollbar Styles */
     ::-webkit-scrollbar {
@@ -652,6 +689,8 @@
       .user-info { flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 12px; }
       .content h1 { font-size: 28px; }
       .stats-container { grid-template-columns: 1fr; }
+      .filter-container { flex-direction: column; align-items: stretch; }
+      .filter-container > div { width: 100%; }
     }
   </style>
 </head>
@@ -664,8 +703,8 @@
       <a href="attendance.html"><i class="fa-solid fa-clipboard-check"></i><span>Attendance</span></a>
       <a href="absences.html" class="active"><i class="fa-solid fa-clipboard-list"></i><span>Absences</span></a>
       <a href="dropouts.html"><i class="fa-solid fa-user-slash"></i><span>Dropouts</span></a>
-      <a href="guardians.html"><i class="fa-solid fa-ban"></i><span>Guardians</span></a>
-      <a href="parentqr.html" class="active"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
+      <a href="unauthorized.html"><i class="fa-solid fa-ban"></i><span>Guardians</span></a>
+      <a href="parentqr.html"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
     </div>
     <div class="right">
       <div class="user-info" id="userInfo">
@@ -701,61 +740,84 @@
     </aside>
 
     <main class="content">
-      <h1><i class="fa-solid fa-clipboard-list"></i> Student Absences</h1>
-      
-      <div id="alertContainer"></div>
-
-      <div class="stats-container">
-        <div class="stat-card">
-          <div class="stat-icon absent">
-            <i class="fa-solid fa-user-xmark"></i>
-          </div>
-          <div class="stat-info">
-            <h3>Total Absences</h3>
-            <p id="totalAbsences">0</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon total">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <div class="stat-info">
-            <h3>Total Students</h3>
-            <p id="totalStudents">0</p>
-          </div>
-        </div>
+      <h1><i class="fa-solid fa-clipboard-list"></i> Student Absences</h1><div id="alertContainer"></div>
+  <!-- Enhanced stats container with unscanned count -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon absent">
+        <i class="fa-solid fa-user-xmark"></i>
       </div>
-
-      <section class="filter-container">
-        <label for="filterDate"><i class="fa-solid fa-filter"></i> Filter by Date:</label>
-        <input type="date" id="filterDate">
-        <button id="clearFilterBtn"><i class="fa-solid fa-times"></i> Clear Filter</button>
-        <button id="debugAPIBtn"><i class="fa-solid fa-bug"></i> Debug API</button>
-      </section>
-
-      <section class="table-container">
-        <h2><i class="fa-solid fa-table"></i> Absence Records <span id="dateIndicator" style="font-weight: normal; font-size: 16px; color: #64748b;"></span></h2>
-        <div id="loadingIndicator" class="loading" style="display:none;">
-          <i class="fa-solid fa-spinner"></i>
-          <p>Loading absence records...</p>
-        </div>
-        <table class="absence-table" id="absenceTable">
-          <thead>
-            <tr>
-              <th>Student Name</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Reason</th>
-              <th style="text-align:center;">Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-    </main>
+      <div class="stat-info">
+        <h3>Total Absences</h3>
+        <p id="totalAbsences">0</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="stat-info">
+        <h3>Total Students</h3>
+        <p id="totalStudents">0</p>
+      </div>
+    </div>
+    
+    <!-- NEW: Unscanned students card -->
+    <div class="stat-card" style="cursor: pointer;" onclick="showUnscannedDetails()">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); color: #ffc107;">
+        <i class="fa-solid fa-user-clock"></i>
+      </div>
+      <div class="stat-info">
+        <h3>Unscanned Today</h3>
+        <p id="unscannedCount" style="background: linear-gradient(135deg, #ffc107, #ff9800); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</p>
+      </div>
+    </div>
   </div>
 
-  <script>
+  <!-- Enhanced filter container with auto-absence buttons -->
+  <section class="filter-container">
+    <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+      <label for="filterDate"><i class="fa-solid fa-filter"></i> Filter by Date:</label>
+      <input type="date" id="filterDate">
+      <button id="clearFilterBtn"><i class="fa-solid fa-times"></i> Clear Filter</button>
+    </div>
+    
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button id="markAbsentBtn">
+        <i class="fa-solid fa-user-xmark"></i> Mark Unscanned Absent
+      </button>
+      
+      <button id="refreshStatsBtn">
+        <i class="fa-solid fa-refresh"></i> Refresh
+      </button>
+    </div>
+  </section>
+
+  <section class="table-container">
+    <h2><i class="fa-solid fa-table"></i> Absence Records <span id="dateIndicator" style="font-weight: normal; font-size: 16px; color: #64748b;"></span></h2>
+    
+    <div id="loadingIndicator" class="loading" style="display:none;">
+      <i class="fa-solid fa-spinner"></i>
+      <p>Loading absence records...</p>
+    </div>
+    
+    <table class="absence-table" id="absenceTable">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Reason</th>
+          <th style="text-align:center;">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+  </div>
+ <script>
     // ============================
     // AUTHENTICATION CHECK
     // ============================
@@ -767,21 +829,51 @@
                   localStorage.getItem("auth_token") || 
                   localStorage.getItem("token");
       
+      // Try multiple possible keys for teacher ID
       teacherId = localStorage.getItem("teacherId") || 
                   localStorage.getItem("teacher_id") || 
-                  localStorage.getItem("id");
+                  localStorage.getItem("id") ||
+                  localStorage.getItem("userId") ||
+                  localStorage.getItem("user_id");
 
       console.log("🔐 Authentication check:", {
         hasToken: !!authToken,
         hasTeacherId: !!teacherId,
-        token: authToken ? "***" + authToken.slice(-4) : "none"
+        teacherId: teacherId,
+        token: authToken ? "***" + authToken.slice(-4) : "none",
+        allLocalStorage: Object.keys(localStorage).reduce((obj, key) => {
+          obj[key] = localStorage.getItem(key);
+          return obj;
+        }, {})
       });
 
-      if (!authToken || !teacherId) {
-        console.log("❌ No authentication found, redirecting to login...");
+      if (!authToken) {
+        console.log("❌ No authentication token found, redirecting to login...");
         alert("⚠️ Please login first to access the absences page.");
         window.location.href = "teacherslogin.html";
         return false;
+      }
+
+      if (!teacherId) {
+        console.warn("⚠️ Teacher ID not found in localStorage");
+        // Try to extract from userData if available
+        const userData = localStorage.getItem("userData");
+        if (userData) {
+          try {
+            const parsed = JSON.parse(userData);
+            teacherId = parsed.id || parsed.teacher_id || parsed.teacherId;
+            console.log("🔍 Found teacher ID from userData:", teacherId);
+          } catch (e) {
+            console.error("Error parsing userData:", e);
+          }
+        }
+        
+        if (!teacherId) {
+          console.log("❌ Could not determine teacher ID");
+          alert("⚠️ Session error. Please login again.");
+          window.location.href = "teacherslogin.html";
+          return false;
+        }
       }
 
       return true;
@@ -841,6 +933,8 @@
     const API_BASE = 'https://childtrack-backend.onrender.com/api';
     const API_ATTENDANCE = `${API_BASE}/attendance`;
     const API_PUBLIC_ATTENDANCE = `${API_BASE}/attendance/public`;
+    const API_MARK_ABSENT = `${API_BASE}/mark-unscanned-absent/`;
+    const API_ABSENCE_STATS = `${API_BASE}/absence-stats/`;
 
     let allAbsenceData = [];
     let allStudentsData = [];
@@ -859,7 +953,7 @@
       const alertContainer = document.getElementById('alertContainer');
       const alert = document.createElement('div');
       alert.className = `alert ${type}`;
-      alert.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+      alert.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'}"></i> ${message}`;
       alertContainer.appendChild(alert);
       
       setTimeout(() => {
@@ -878,6 +972,151 @@
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // ============================
+    // NEW: AUTO-ABSENCE FUNCTIONS
+    // ============================
+    
+    async function markUnscannedAbsent(targetDate = null) {
+      try {
+        if (!teacherId) {
+          showAlert('❌ Teacher ID not found. Please login again.', 'error');
+          return;
+        }
+        
+        const dateToMark = targetDate || getTodayDate();
+        
+        const markBtn = document.getElementById('markAbsentBtn');
+        if (markBtn) {
+          markBtn.disabled = true;
+          markBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Marking...';
+        }
+        
+        console.log('🔄 Marking unscanned students as absent for:', dateToMark);
+        console.log('🔑 Using teacher ID:', teacherId);
+        
+        const response = await fetch(API_MARK_ABSENT, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            date: dateToMark,
+            teacher_id: parseInt(teacherId)
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to mark absences');
+        }
+        
+        const result = await response.json();
+        
+        console.log('✅ Auto-absence result:', result);
+        
+        const message = `
+          ✅ ${result.message}
+          <br>
+          📊 Total Students: ${result.total_students}
+          <br>
+          ✓ Already Marked: ${result.already_marked}
+          <br>
+          ❌ Newly Marked Absent: ${result.marked_count}
+        `;
+        
+        showAlert(message, 'success');
+        
+        await loadData(dateToMark);
+        await updateAbsenceStats(dateToMark);
+        
+        return result;
+        
+      } catch (error) {
+        console.error('❌ Error marking absences:', error);
+        showAlert('❌ Error marking absences: ' + error.message, 'error');
+        throw error;
+      } finally {
+        const markBtn = document.getElementById('markAbsentBtn');
+        if (markBtn) {
+          markBtn.disabled = false;
+          markBtn.innerHTML = '<i class="fa-solid fa-user-xmark"></i> Mark Unscanned Absent';
+        }
+      }
+    }
+    
+    async function updateAbsenceStats(targetDate = null) {
+      try {
+        const dateToCheck = targetDate || getTodayDate();
+        
+        if (!teacherId) {
+          console.warn('⚠️ Teacher ID not available for stats');
+          return;
+        }
+        
+        console.log(`📊 Fetching stats for date: ${dateToCheck}, teacher: ${teacherId}`);
+        
+        const response = await fetch(
+          `${API_ABSENCE_STATS}?date=${dateToCheck}&teacher_id=${teacherId}`,
+          { headers: getAuthHeaders() }
+        );
+        
+        if (!response.ok) {
+          console.warn('Could not fetch absence stats, status:', response.status);
+          const errorText = await response.text();
+          console.warn('Error response:', errorText);
+          return;
+        }
+        
+        const stats = await response.json();
+        console.log('📊 Absence stats:', stats);
+        
+        document.getElementById('totalStudents').textContent = stats.total_students;
+        document.getElementById('totalAbsences').textContent = stats.absent;
+        document.getElementById('unscannedCount').textContent = stats.unscanned;
+        
+        // Remove existing warnings
+        const existingWarning = document.querySelector('.unscanned-warning');
+        if (existingWarning) {
+          existingWarning.remove();
+        }
+        
+        // Show warning if there are unscanned students
+        if (stats.unscanned > 0) {
+          const alertHtml = `
+            <div class="alert warning" style="justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <strong>⚠️ ${stats.unscanned} students haven't been scanned yet today!</strong>
+              </div>
+              <button onclick="markUnscannedAbsent()" style="padding: 8px 16px; background: #ffc107; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fa-solid fa-user-xmark"></i> Mark Them Absent Now
+              </button>
+            </div>
+          `;
+          
+          const alertContainer = document.getElementById('alertContainer');
+          if (alertContainer) {
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'unscanned-warning';
+            warningDiv.innerHTML = alertHtml;
+            alertContainer.insertBefore(warningDiv, alertContainer.firstChild);
+          }
+        }
+        
+        return stats;
+        
+      } catch (error) {
+        console.error('❌ Error fetching stats:', error);
+      }
+    }
+    
+    function showUnscannedDetails() {
+      const count = document.getElementById('unscannedCount').textContent;
+      if (parseInt(count) > 0) {
+        alert(`⚠️ ${count} students haven't been scanned today.\n\nClick "Mark Unscanned Absent" to automatically mark them as absent.`);
+      } else {
+        alert('✅ All students have been scanned today!');
+      }
     }
 
     // ============================
@@ -1087,6 +1326,7 @@
         
         const currentFilter = document.getElementById('filterDate').value;
         await loadData(currentFilter);
+        await updateAbsenceStats(currentFilter);
       } catch (error) {
         console.error('❌ Error updating record:', error);
         showAlert('❌ Error updating record: ' + error.message, 'error');
@@ -1125,6 +1365,7 @@
         
         const currentFilter = document.getElementById('filterDate').value;
         await loadData(currentFilter);
+        await updateAbsenceStats(currentFilter);
       } catch (error) {
         console.error('❌ Error updating record:', error);
         showAlert('❌ Error updating record: ' + error.message, 'error');
@@ -1214,51 +1455,29 @@
     // ============================
     // FILTER BY DATE
     // ============================
-    document.getElementById('filterDate').addEventListener('change', (e) => {
-      loadData(e.target.value);
+    document.getElementById('filterDate').addEventListener('change', async (e) => {
+      await loadData(e.target.value);
+      await updateAbsenceStats(e.target.value);
     });
 
-    document.getElementById('clearFilterBtn').addEventListener('click', () => {
+    document.getElementById('clearFilterBtn').addEventListener('click', async () => {
       document.getElementById('filterDate').value = '';
-      loadData(null);
+      await loadData(null);
+      await updateAbsenceStats(getTodayDate());
     });
 
-    document.getElementById('debugAPIBtn').addEventListener('click', async () => {
-      console.log('🐛 === DEBUG API CALL ===');
-      console.log('Auth Token:', authToken);
-      console.log('Teacher ID:', teacherId);
-      console.log('API Endpoint:', API_ATTENDANCE);
-      
-      try {
-        console.log('📡 Trying authenticated endpoint...');
-        const response1 = await fetch(API_ATTENDANCE, {
-          headers: getAuthHeaders()
-        });
-        console.log('Response Status:', response1.status);
-        
-        if (response1.ok) {
-          const data1 = await response1.json();
-          console.log('✅ Authenticated Data:', data1);
-          alert(`✅ Got ${data1.length} records from authenticated endpoint. Check console for details.`);
-        } else {
-          console.log('📡 Trying public endpoint...');
-          const response2 = await fetch(API_PUBLIC_ATTENDANCE);
-          console.log('Public Response Status:', response2.status);
-          
-          if (response2.ok) {
-            const data2 = await response2.json();
-            console.log('✅ Public Data:', data2);
-            alert(`✅ Got ${data2.length} records from public endpoint. Check console for details.`);
-          } else {
-            alert('❌ Both endpoints failed. Check console for details.');
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error:', error);
-        alert('❌ Error: ' + error.message);
-      }
-      
-      console.log('🐛 === END DEBUG ===');
+    // ============================
+    // NEW: BUTTON EVENT LISTENERS
+    // ============================
+    document.getElementById('markAbsentBtn').addEventListener('click', async () => {
+      const currentDate = document.getElementById('filterDate').value || getTodayDate();
+      await markUnscannedAbsent(currentDate);
+    });
+    
+    document.getElementById('refreshStatsBtn').addEventListener('click', async () => {
+      const currentDate = document.getElementById('filterDate').value || getTodayDate();
+      await updateAbsenceStats(currentDate);
+      await loadData(currentDate);
     });
 
     // ============================
@@ -1326,13 +1545,12 @@
         document.getElementById('filterDate').value = today;
         
         console.log(`🔍 Loading data for today: ${today}`);
-        loadData(null);
+        await loadData(null);
+        await updateAbsenceStats(today);
         
         console.log("✅ Absences page loaded successfully");
       }
     };
   </script>
-
 </body>
-
 </html>

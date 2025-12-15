@@ -20,6 +20,126 @@
       color: #e2e8f0; 
     }
 
+    /* Photo Modal/Lightbox */
+.photo-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  animation: fadeIn 0.3s ease;
+}
+
+.photo-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  animation: zoomIn 0.3s ease;
+}
+
+.photo-modal-content img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.photo-modal-close {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.photo-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.photo-modal-info {
+  position: absolute;
+  bottom: -60px;
+  left: 0;
+  right: 0;
+  color: white;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.photo-modal-info h3 {
+  font-size: 20px;
+  margin-bottom: 5px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.photo-modal-info p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.8);
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+}
+
+/* Update guardian photo hover to indicate clickable */
+.guardian-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #6366f1;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+  cursor: zoom-in; /* Changed from pointer */
+  transition: all 0.3s ease;
+}
+
+.guardian-photo:hover {
+  transform: scale(1.2); /* Reduced from 2.5 */
+  z-index: 100;
+  border-color: #4f46e5;
+  box-shadow: 0 8px 25px rgba(99,102,241,0.5);
+}
+
     /* Navbar Styles */
     .navbar { 
       width: 100%; 
@@ -634,6 +754,21 @@
       </div>
     </aside>
 
+
+    <!-- Photo Modal -->
+<div id="photoModal" class="photo-modal">
+  <div class="photo-modal-content">
+    <span class="photo-modal-close" id="closeModal">
+      <i class="fa-solid fa-times"></i>
+    </span>
+    <img id="modalImage" src="" alt="Guardian Photo">
+    <div class="photo-modal-info" id="modalInfo">
+      <h3 id="modalGuardianName"></h3>
+      <p id="modalStudentName"></p>
+    </div>
+  </div>
+</div>
+
     <main class="content">
       <h1><i class="fa-solid fa-users"></i> Guardian Directory</h1>
       
@@ -907,91 +1042,120 @@
       
       console.log('📊 Stats updated:', { totalGuardians, uniqueStudents });
     }
+// ============================
+// DISPLAY GUARDIAN DATA
+// ============================
+function displayGuardianData(data) {
+  const tbody = document.querySelector("#guardianTable tbody");
+  tbody.innerHTML = "";
+  
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="empty-state">
+          <i class="fa-solid fa-users-slash"></i>
+          <p>No guardian records found. ${document.getElementById('searchInput').value ? 'Try a different search term.' : 'Register guardians to see them here.'}</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  // Sort by timestamp (most recent first)
+  data.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+  
+  data.forEach((guardian) => {
+    const tr = document.createElement("tr");
+    
+    const guardianName = guardian.name || 'N/A';
+    const studentName = guardian.student_name || 'N/A';
+    const age = guardian.age || 'N/A';
+    const relationship = guardian.relationship || 'N/A';
+    const contact = guardian.contact || 'N/A';
+    const teacherName = guardian.teacher_name || guardian.teacher || teacherId || 'N/A';
+    const timestamp = guardian.timestamp || 'N/A';
+    
+    // ===== UPDATED PHOTO HANDLING =====
+    // ===== UPDATED PHOTO HANDLING WITH MODAL =====
+const photoBase64 = guardian.photo_base64 || guardian.photo || '';
 
-    // ============================
-    // DISPLAY GUARDIAN DATA
-    // ============================
-    function displayGuardianData(data) {
-      const tbody = document.querySelector("#guardianTable tbody");
-      tbody.innerHTML = "";
-      
-      if (!Array.isArray(data) || data.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="empty-state">
-              <i class="fa-solid fa-users-slash"></i>
-              <p>No guardian records found. ${document.getElementById('searchInput').value ? 'Try a different search term.' : 'Register guardians to see them here.'}</p>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-      
-      // Sort by timestamp (most recent first)
-      data.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-      
-      data.forEach((guardian) => {
-        const tr = document.createElement("tr");
-        
-        const guardianName = guardian.name || 'N/A';
-        const studentName = guardian.student_name || 'N/A';
-        const age = guardian.age || 'N/A';
-        const relationship = guardian.relationship || 'N/A';
-        const contact = guardian.contact || 'N/A';
-        const teacherName = guardian.teacher || teacherId || 'N/A';
-        const timestamp = guardian.timestamp || 'N/A';
-        const photo = guardian.photo || guardian.image || '';
-        
-        // Create photo HTML
-        let photoHTML = '';
-        if (photo && photo.trim() !== '') {
-          // Handle both full URLs and relative paths
-          const photoUrl = photo.startsWith('http') ? photo : `https://childtrack-backend.onrender.com${photo}`;
-          photoHTML = `<img src="${photoUrl}" alt="${guardianName}" class="guardian-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                       <div class="guardian-photo default" style="display:none;"><i class="fa-solid fa-user"></i></div>`;
-        } else {
-          // Default avatar with first letter
-          const firstLetter = guardianName.charAt(0).toUpperCase();
-          photoHTML = `<div class="guardian-photo default">${firstLetter}</div>`;
-        }
-        
-        tr.innerHTML = `
-          <td style="text-align: center;">
-            ${photoHTML}
-          </td>
-          <td>
-            <strong style="font-size: 16px; color: #6366f1;">
-              <i class="fa-solid fa-user-shield"></i> ${guardianName}
-            </strong>
-          </td>
-          <td>
-            <div class="student-highlight">
-              <i class="fa-solid fa-child"></i> <strong>${studentName}</strong>
-            </div>
-          </td>
-          <td style="font-weight: 600; font-size: 16px;">
-            ${age} years
-          </td>
-          <td>
-            <span class="relationship-badge">
-              <i class="fa-solid fa-heart"></i> ${relationship}
-            </span>
-          </td>
-          <td style="font-weight: 600;">
-            <i class="fa-solid fa-phone" style="color: #6366f1;"></i> ${contact}
-          </td>
-          <td style="color: #64748b; font-weight: 500;">
-            <i class="fa-solid fa-chalkboard-user"></i> ${teacherName}
-          </td>
-          <td style="font-size: 13px; color: #94a3b8; font-weight: 500;">
-            <i class="fa-solid fa-clock"></i> ${formatDate(timestamp)}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-      
-      console.log(`✅ Displayed ${data.length} guardian records`);
-    }
+let photoHTML = '';
+if (photoBase64 && photoBase64.trim() !== '') {
+  // Handle base64 image data
+  let imageSrc = '';
+  
+  // Check if it already has data URI prefix
+  if (photoBase64.startsWith('data:image')) {
+    imageSrc = photoBase64;
+  } else if (photoBase64.startsWith('http')) {
+    // Legacy URL format (shouldn't happen with new setup)
+    imageSrc = photoBase64;
+  } else {
+    // Raw base64 string - add data URI prefix
+    imageSrc = `data:image/jpeg;base64,${photoBase64}`;
+  }
+  
+  // Create clickable photo that opens modal
+  photoHTML = `<img src="${imageSrc}" 
+                    alt="${guardianName}" 
+                    class="guardian-photo" 
+                    onclick="openPhotoModal('${imageSrc}', '${guardianName.replace(/'/g, "\\'")}', '${studentName.replace(/'/g, "\\'")}')"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               <div class="guardian-photo default" 
+                    style="display:none;"
+                    onclick="alert('No photo available for ${guardianName.replace(/'/g, "\\'")}')"
+                    ><i class="fa-solid fa-user"></i></div>`;
+  
+  console.log(`📷 Photo for ${guardianName}: ${photoBase64.substring(0, 50)}...`);
+} else {
+  // Default avatar with first letter (non-clickable for empty photos)
+  const firstLetter = guardianName.charAt(0).toUpperCase();
+  photoHTML = `<div class="guardian-photo default" 
+                    style="cursor: default;"
+                    title="No photo available"
+                    >${firstLetter}</div>`;
+  console.log(`📷 No photo for ${guardianName}, using default avatar`);
+}
+
+    // ===== END PHOTO HANDLING =====
+    
+    tr.innerHTML = `
+      <td style="text-align: center;">
+        ${photoHTML}
+      </td>
+      <td>
+        <strong style="font-size: 16px; color: #6366f1;">
+          <i class="fa-solid fa-user-shield"></i> ${guardianName}
+        </strong>
+      </td>
+      <td>
+        <div class="student-highlight">
+          <i class="fa-solid fa-child"></i> <strong>${studentName}</strong>
+        </div>
+      </td>
+      <td style="font-weight: 600; font-size: 16px;">
+        ${age} years
+      </td>
+      <td>
+        <span class="relationship-badge">
+          <i class="fa-solid fa-heart"></i> ${relationship}
+        </span>
+      </td>
+      <td style="font-weight: 600;">
+        <i class="fa-solid fa-phone" style="color: #6366f1;"></i> ${contact}
+      </td>
+      <td style="color: #64748b; font-weight: 500;">
+        <i class="fa-solid fa-chalkboard-user"></i> ${teacherName}
+      </td>
+      <td style="font-size: 13px; color: #94a3b8; font-weight: 500;">
+        <i class="fa-solid fa-clock"></i> ${formatDate(timestamp)}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  console.log(`✅ Displayed ${data.length} guardian records`);
+}
 
     // ============================
     // SEARCH FUNCTIONALITY
@@ -1030,6 +1194,51 @@
       displayGuardianData(filteredGuardianData);
       console.log('🔄 Search cleared');
     });
+
+
+    // ============================
+// PHOTO MODAL FUNCTIONALITY
+// ============================
+function openPhotoModal(imageSrc, guardianName, studentName) {
+  const modal = document.getElementById('photoModal');
+  const modalImage = document.getElementById('modalImage');
+  const modalGuardianName = document.getElementById('modalGuardianName');
+  const modalStudentName = document.getElementById('modalStudentName');
+  
+  modalImage.src = imageSrc;
+  modalGuardianName.textContent = guardianName;
+  modalStudentName.textContent = `Student: ${studentName}`;
+  
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  
+  console.log(`🖼️ Opened photo modal for ${guardianName}`);
+}
+
+function closePhotoModal() {
+  const modal = document.getElementById('photoModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = 'auto'; // Restore scrolling
+  
+  console.log('🖼️ Closed photo modal');
+}
+
+// Close modal when clicking close button
+document.getElementById('closeModal').addEventListener('click', closePhotoModal);
+
+// Close modal when clicking outside the image
+document.getElementById('photoModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closePhotoModal();
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closePhotoModal();
+  }
+});
 
     // ============================
     // DARK MODE TOGGLE
