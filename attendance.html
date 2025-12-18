@@ -1304,31 +1304,37 @@ body.dark .sf2-info {
     }
 
     // ============================
-    // UPDATE STATISTICS
-    // ============================
-    function updateStats(data, filterDate) {
-      const today = getTodayDate();
-      const dateToCheck = filterDate || today;
-      
-      const todayRecords = data.filter(record => record.date === dateToCheck);
-      
-      const presentCount = todayRecords.filter(r => 
-        (r.status || '').toLowerCase() === 'present'
-      ).length;
-      
-      const lateCount = todayRecords.filter(r => 
-        (r.status || '').toLowerCase() === 'late'
-      ).length;
-      
-      const pickupCount = todayRecords.filter(r => 
-        ['pick-up', 'pickup'].includes((r.status || '').toLowerCase())
-      ).length;
-      
-      document.getElementById('todayCount').textContent = todayRecords.length;
-      document.getElementById('presentCount').textContent = presentCount;
-      document.getElementById('lateCount').textContent = lateCount;
-      document.getElementById('pickupCount').textContent = pickupCount;
-    }
+// UPDATE STATISTICS
+// ============================
+function updateStats(data, filterDate) {
+  const today = getTodayDate();
+  const dateToCheck = filterDate || today;
+  
+  const todayRecords = data.filter(record => record.date === dateToCheck);
+  
+  // Count only drop-off students for today's records
+  const dropOffCount = todayRecords.filter(r => {
+    const status = (r.status || '').toLowerCase().replace(/\s+/g, '-');
+    return status === 'drop-off' || status === 'dropdown' || status === 'dropoff';
+  }).length;
+  
+  const presentCount = todayRecords.filter(r => 
+    (r.status || '').toLowerCase() === 'present'
+  ).length;
+  
+  const lateCount = todayRecords.filter(r => 
+    (r.status || '').toLowerCase() === 'late'
+  ).length;
+  
+  const pickupCount = todayRecords.filter(r => 
+    ['pick-up', 'pickup'].includes((r.status || '').toLowerCase())
+  ).length;
+  
+  document.getElementById('todayCount').textContent = dropOffCount;
+  document.getElementById('presentCount').textContent = presentCount;
+  document.getElementById('lateCount').textContent = lateCount;
+  document.getElementById('pickupCount').textContent = pickupCount;
+}
 
     // ============================
     // ENHANCED LOAD DATA WITH STATUS FILTER
