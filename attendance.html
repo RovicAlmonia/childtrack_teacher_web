@@ -19,6 +19,33 @@
       color: #e2e8f0; 
     }
     
+
+/* Dark mode styling for the status filter */
+body.dark #filterStatus {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+#filterStatus:focus {
+  outline: none;
+  border-color: #38c586;
+  box-shadow: 0 0 0 4px rgba(56,197,134,0.1);
+}
+
+    /* Add dark mode styling for the new select */
+body.dark #filterStatus {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+#filterStatus:focus {
+  outline: none;
+  border-color: #38c586;
+  box-shadow: 0 0 0 4px rgba(56,197,134,0.1);
+}
+
     /* Navbar Styles */
     .navbar { 
       width: 100%; 
@@ -569,6 +596,105 @@
       justify-content: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+
+    /* SF2 Generation Section */
+.sf2-container {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  padding: 35px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  margin-bottom: 30px;
+  border: 1px solid rgba(56,197,134,0.1);
+  animation: fadeInUp 0.6s ease 0.6s both;
+}
+body.dark .sf2-container {
+  background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(30,41,59,0.85));
+  border-color: rgba(56,197,134,0.2);
+}
+.sf2-container h2 {
+  background: linear-gradient(135deg, #38c586, #2fa46e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sf2-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+.file-input-wrapper input[type=file] {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+}
+.file-input-label {
+  display: inline-block;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(100,116,139,0.3);
+}
+.file-input-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100,116,139,0.4);
+}
+.generate-sf2-btn {
+  background: linear-gradient(135deg, #38c586, #2fa46e);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 20px rgba(56,197,134,0.3);
+}
+.generate-sf2-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(56,197,134,0.4);
+}
+.generate-sf2-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.sf2-info {
+  background: rgba(56,197,134,0.1);
+  padding: 15px 20px;
+  border-radius: 10px;
+  border-left: 4px solid #38c586;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+body.dark .sf2-info {
+  color: #94a3b8;
+}
+
+
+
     .btn-action.edit { 
       background: linear-gradient(135deg, #fff3cd, #ffeaa7);
       color: #856404;
@@ -705,6 +831,7 @@
   </style>
 </head>
 <body class="light">
+  <!-- Navbar -->
   <div class="navbar">
     <div class="left">
       <div class="logo"><i class="fa-solid fa-child-reaching"></i>CHILDTrack</div>
@@ -713,7 +840,7 @@
       <a href="absences.html"><i class="fa-solid fa-clipboard-list"></i><span>Absences</span></a>
       <a href="dropouts.html"><i class="fa-solid fa-user-slash"></i><span>Dropouts</span></a>
       <a href="unauthorized.html"><i class="fa-solid fa-ban"></i><span>Guardian</span></a>
-      <a href="parentqr.html" class="active"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
+      <a href="parentqr.html"><i class="fa-solid fa-qrcode"></i><span>Parent QR</span></a>
     </div>
     <div class="right">
       <div class="user-info" id="userInfo">
@@ -730,28 +857,33 @@
     </div>
   </div>
 
-  <!-- Image Preview Modal -->
-<div id="photoModal" class="photo-modal">
-  <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
-  <img class="photo-modal-content" id="photoModalImg">
-</div>
+  <!-- Photo Preview Modal -->
+  <div id="photoModal" class="photo-modal">
+    <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
+    <img class="photo-modal-content" id="photoModalImg">
+  </div>
 
-
+  <!-- Main Container -->
   <div class="main-container">
+    <!-- Sidebar with Calendar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2><i class="fa-solid fa-calendar-days"></i> Calendar</h2>
-        <button class="collapse-btn" id="collapseBtn" title="Toggle Calendar"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="collapse-btn" id="collapseBtn" title="Toggle Calendar">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
       </div>
       <div class="calendar-wrapper">
         <iframe src="https://calendar.google.com/calendar/embed?src=en.philippines%23holiday%40group.v.calendar.google.com&ctz=Asia%2FManila" frameborder="0" scrolling="no"></iframe>
       </div>
     </aside>
 
+    <!-- Main Content Area -->
     <main class="content">
+      <!-- Page Title -->
       <h1><i class="fa-solid fa-clipboard-check"></i> Daily Attendance</h1>
       
-      <!-- Stats Row -->
+      <!-- Statistics Cards -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="icon"><i class="fa-solid fa-calendar-day"></i></div>
@@ -775,8 +907,10 @@
         </div>
       </div>
       
+      <!-- Alert Container -->
       <div id="alertContainer"></div>
       
+      <!-- Attendance Recording Form -->
       <section class="form-container">
         <h2><i class="fa-solid fa-pen-to-square"></i> Record Attendance</h2>
         
@@ -805,6 +939,7 @@
           </p>
         </div>
 
+        <!-- Attendance Form Fields -->
         <div class="form-grid">
           <input type="text" id="name" placeholder="Student Name" required>
           <input type="text" id="lrn" placeholder="Student LRN (optional)">
@@ -828,15 +963,52 @@
         </div>
       </section>
 
-      <section class="filter-container">
-        <label for="filterDate"><i class="fa-solid fa-filter"></i> Filter by Date:</label>
-        <input type="date" id="filterDate">
-        <div class="filter-btns">
-          <button id="todayBtn"><i class="fa-solid fa-calendar-day"></i> Today</button>
-          <button id="clearFilterBtn"><i class="fa-solid fa-times"></i> Clear Filter</button>
+      <!-- SF2 Report Generation Section -->
+      <section class="sf2-container">
+        <h2><i class="fa-solid fa-file-excel"></i> Generate SF2 Report</h2>
+        
+        <div class="sf2-controls">
+          <div class="file-input-wrapper">
+            <input type="file" id="sf2Template" accept=".xlsx,.xls" />
+            <label for="sf2Template" class="file-input-label">
+              <i class="fa-solid fa-upload"></i> Upload SF2 Template
+            </label>
+          </div>
+          
+          <button class="generate-sf2-btn" id="generateSf2Btn" disabled>
+            <i class="fa-solid fa-file-export"></i> Generate SF2 Report
+          </button>
+        </div>
+        
+        <div class="sf2-info">
+          <i class="fa-solid fa-info-circle"></i> 
+          <strong>Instructions:</strong> Upload your SF2 template file (.xlsx), then click "Generate SF2 Report" to create a report with attendance data for the current month.
         </div>
       </section>
 
+<!-- ============================
+     FILTER SECTION WITH STATUS FILTER
+     ============================ -->
+<section class="filter-container">
+  <label for="filterDate"><i class="fa-solid fa-filter"></i> Filter by Date:</label>
+  <input type="date" id="filterDate">
+  
+  <label for="filterStatus"><i class="fa-solid fa-list-check"></i> Filter by Status:</label>
+  <select id="filterStatus" style="padding: 12px 18px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; background: white; color: #2c3e50; font-weight: 500; transition: all 0.3s ease; min-width: 180px;">
+    <option value="drop-off">Drop-Off</option>
+    <option value="">All Status</option>
+    <option value="present">Present</option>
+    <option value="late">Late</option>
+    <option value="pick-up">Pick-Up</option>
+  </select>
+  
+  <div class="filter-btns">
+    <button id="todayBtn"><i class="fa-solid fa-calendar-day"></i> Today</button>
+    <button id="clearFilterBtn"><i class="fa-solid fa-times"></i> Clear All Filters</button>
+  </div>
+</section>
+
+      <!-- Attendance Records Table -->
       <section class="table-container">
         <h2><i class="fa-solid fa-table"></i> Attendance Records</h2>
         <div id="loadingIndicator" class="loading" style="display:none;">
@@ -859,8 +1031,8 @@
       </section>
     </main>
   </div>
-
-  <script>
+</body>
+<script>
     // ============================
     // CLASS TIME SETTINGS
     // ============================
@@ -1030,7 +1202,6 @@
     // ============================
     const API_BASE = 'https://childtrack-backend.onrender.com/api';
     const API_ATTENDANCE = `${API_BASE}/attendance`;
-    const API_PUBLIC_ATTENDANCE = `${API_BASE}/attendance/public`;
     const API_BULK_UPDATE = `${API_BASE}/attendance/bulk-update`;
     const API_SCAN_PHOTOS = `${API_BASE}/scan-photos`;
 
@@ -1160,9 +1331,9 @@
     }
 
     // ============================
-    // LOAD ATTENDANCE DATA
+    // ENHANCED LOAD DATA WITH STATUS FILTER
     // ============================
-    async function loadData(filterDate = null) {
+    async function loadData(filterDate = null, filterStatus = null) {
       const tbody = document.querySelector("#attendanceTable tbody");
       const loadingIndicator = document.getElementById('loadingIndicator');
       
@@ -1174,13 +1345,13 @@
         scanPhotosData = await loadScanPhotos();
         console.log('Photo map created:', Object.keys(scanPhotosData).length, 'students');
         
-        // Then load attendance data
-        let response = await fetch(API_PUBLIC_ATTENDANCE, {
+        // Fetch attendance data from /api/attendance
+        let response = await fetch(API_ATTENDANCE, {
           headers: getAuthHeaders()
         });
         
         if (!response.ok && response.status === 404) {
-          response = await fetch(`${API_PUBLIC_ATTENDANCE}/`, {
+          response = await fetch(`${API_ATTENDANCE}/`, {
             headers: getAuthHeaders()
           });
         }
@@ -1216,11 +1387,13 @@
         const dateToFilter = filterDate !== null ? filterDate : getTodayDate();
         
         let displayData = data;
+        
+        // Apply date filter
         if (dateToFilter) {
-          displayData = data.filter(record => record.date === dateToFilter);
+          displayData = displayData.filter(record => record.date === dateToFilter);
         }
         
-        // Update statistics
+        // Update statistics (before status filter)
         updateStats(data, dateToFilter);
         
         // Filter out absent and dropped out students
@@ -1229,10 +1402,50 @@
           return status !== 'absent' && status !== 'dropped out';
         });
         
+        // Apply status filter if provided
+        if (filterStatus) {
+          displayData = displayData.filter(record => {
+            const status = (record.status || '').toLowerCase().replace(/\s+/g, '-');
+            const targetStatus = filterStatus.toLowerCase();
+            
+            // Handle variations of drop-off and pick-up
+            if (targetStatus === 'drop-off') {
+              return status === 'drop-off' || status === 'dropdown' || status === 'dropoff';
+            }
+            if (targetStatus === 'pick-up') {
+              return status === 'pick-up' || status === 'pickup';
+            }
+            
+            return status === targetStatus;
+          });
+        }
+        
+        // Remove duplicates based on student name, date, and status
+        const uniqueData = [];
+        const seen = new Set();
+        
+        displayData.forEach(record => {
+          const key = `${record.student_name}_${record.date}_${record.status}`.toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueData.push(record);
+          }
+        });
+        
+        displayData = uniqueData;
+        
         if (displayData.length === 0) {
-          const message = dateToFilter ? 
-            `No attendance records found for ${formatDate(dateToFilter)}.` : 
-            'No attendance records yet. Add your first record above.';
+          let message = 'No attendance records found';
+          if (dateToFilter && filterStatus) {
+            message = `No ${filterStatus} records found for ${formatDate(dateToFilter)}.`;
+          } else if (dateToFilter) {
+            message = `No attendance records found for ${formatDate(dateToFilter)}.`;
+          } else if (filterStatus) {
+            message = `No ${filterStatus} records found.`;
+          } else {
+            message = 'No attendance records yet. Add your first record above.';
+          }
+          
           tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; opacity: 0.7; font-size: 16px;"><i class="fa-solid fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>${message}</td></tr>`;
           return;
         }
@@ -1250,10 +1463,9 @@
           const status = row.status || 'Unknown';
           const statusClass = status.toLowerCase().replace(/\s+/g, '').replace('-', '');
           
-          // Get photo from scan photos data using student name
+          // Get photo from scan photos data using student name (case-insensitive match)
           const rawPhoto = scanPhotosData[studentName.toLowerCase().trim()] || '';
           const scanPhoto = normalizePhotoSrc(rawPhoto);
-
           
           if (scanPhoto) {
             console.log(`✅ Found photo for ${studentName}:`, scanPhoto);
@@ -1311,6 +1523,169 @@
       }
     }
 
+    
+// ============================
+// SF2 REPORT GENERATION
+// ============================
+const API_REPORTS = 'https://childtrack-backend.onrender.com/api/reports/sf2/';
+let uploadedTemplateFile = null;
+
+// Handle SF2 template file upload
+document.getElementById('sf2Template').addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    uploadedTemplateFile = e.target.files[0];
+    const fileName = e.target.files[0].name;
+    const validExtensions = ['.xlsx', '.xls'];
+    const fileExtension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+    
+    if (!validExtensions.includes(fileExtension)) {
+      showAlert("Please upload a valid Excel file (.xlsx or .xls)", "error");
+      e.target.value = '';
+      uploadedTemplateFile = null;
+      document.getElementById('generateSf2Btn').disabled = true;
+      return;
+    }
+    
+    showAlert(`✅ SF2 template "${fileName}" loaded successfully`, "success");
+    document.getElementById('generateSf2Btn').disabled = false;
+  } else {
+    uploadedTemplateFile = null;
+    document.getElementById('generateSf2Btn').disabled = true;
+  }
+});
+
+// Generate SF2 Report
+document.getElementById('generateSf2Btn').addEventListener('click', async () => {
+  if (!uploadedTemplateFile) {
+    showAlert("⚠️ Please upload an SF2 template file first", "error");
+    return;
+  }
+  
+  try {
+    const generateBtn = document.getElementById('generateSf2Btn');
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+    
+    showAlert("🔄 Generating SF2 report... Please wait.", "success");
+    
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    
+    const formData = new FormData();
+    formData.append("template_file", uploadedTemplateFile);
+    formData.append("month", month.toString());
+    formData.append("year", year.toString());
+    
+    // Add teacher_id if available
+    if (teacherId) {
+      formData.append("teacher_id", teacherId.toString());
+    }
+    
+    console.log('Sending SF2 request:', {
+      endpoint: API_REPORTS,
+      month: month,
+      year: year,
+      teacher_id: teacherId,
+      filename: uploadedTemplateFile.name
+    });
+    
+    let response = await fetch(API_REPORTS, {
+      method: 'POST',
+      headers: {
+        "Authorization": authToken ? `Token ${authToken}` : "",
+        // Don't set Content-Type for FormData - browser will set it with boundary
+      },
+      body: formData
+    });
+    
+    if (!response.ok && response.status === 404) {
+      console.log('Trying with trailing slash...');
+      response = await fetch(`${API_REPORTS}/`, {
+        method: 'POST',
+        headers: {
+          "Authorization": authToken ? `Token ${authToken}` : "",
+        },
+        body: formData
+      });
+    }
+    
+    if (response.status === 401) {
+      showAlert("⚠️ Session expired. Please log in again.", "error");
+      localStorage.removeItem("authToken");
+      setTimeout(() => {
+        window.location.href = "teacherslogin.html";
+      }, 2000);
+      return;
+    }
+    
+    if (!response.ok) {
+      let errorMessage = `Error generating SF2 report (Status: ${response.status})`;
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorJson = await response.json();
+          console.error('SF2 Error Response:', errorJson);
+          errorMessage = errorJson.error || errorJson.detail || errorJson.message || errorMessage;
+        } else {
+          const errorText = await response.text();
+          console.error('SF2 Error Text:', errorText);
+          errorMessage = errorText.substring(0, 200) || errorMessage;
+        }
+      } catch (e) {
+        console.error("Error reading error response:", e);
+      }
+      
+      showAlert(`❌ ${errorMessage}`, "error");
+      return;
+    }
+    
+    const blob = await response.blob();
+    console.log('Received blob:', { size: blob.size, type: blob.type });
+    
+    if (blob.size === 0) {
+      showAlert("❌ Received empty file from server", "error");
+      return;
+    }
+    
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `SF2_Report_${month}_${year}.xlsx`;
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1].replace(/['"]/g, '');
+      }
+    }
+    
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+    
+    showAlert("✅ SF2 report generated successfully! Check your downloads.", "success");
+    
+    // Reset the file input
+    document.getElementById('sf2Template').value = '';
+    uploadedTemplateFile = null;
+    generateBtn.disabled = true;
+    
+  } catch (error) {
+    console.error("SF2 Generation Error:", error);
+    showAlert(`❌ Network error: ${error.message}`, "error");
+  } finally {
+    const generateBtn = document.getElementById('generateSf2Btn');
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = '<i class="fa-solid fa-file-export"></i> Generate SF2 Report';
+  }
+});
+
     // ============================
     // BULK UPDATE FUNCTION
     // ============================
@@ -1355,9 +1730,10 @@
         
         showAlert(`✅ Successfully updated ${result.updated_count || updates.length} record(s)!`, 'success');
         
-        // Reload with current filter
-        const currentFilter = document.getElementById('filterDate').value;
-        await loadData(currentFilter || null);
+        // Reload with current filters
+        const currentDateFilter = document.getElementById('filterDate').value || null;
+        const currentStatusFilter = document.getElementById('filterStatus').value || null;
+        await loadData(currentDateFilter, currentStatusFilter);
         
         return result;
       } catch (error) {
@@ -1376,22 +1752,18 @@
       const lrn = document.getElementById("lrn").value.trim();
       const gender = document.getElementById("gender").value;
       const date = document.getElementById("date").value;
-      const time = document.getElementById("time").value;
+      let time = document.getElementById("time").value;
       let status = document.getElementById("status").value;
+
+      // Ensure time is always set
+      if (!time) {
+        time = getCurrentTime();
+        document.getElementById("time").value = time;
+      }
 
       if (!name || !date || !gender || !time) {
         showAlert("Please fill all required fields (Name, Gender, Date, Time).", 'error');
         return;
-      }
-
-      // Auto-detect status based on time if not manually set or if "Present" is selected
-      if (!status || status === '' || status === 'Present') {
-        status = autoDetectStatus(time, status);
-        
-        // Show notification if auto-detected as late
-        if (status === 'Late') {
-          showAlert(`⏰ Student marked as LATE (arrived after ${document.getElementById('lateTimeDisplay').textContent})`, 'error');
-        }
       }
 
       const recordData = { 
@@ -1479,9 +1851,10 @@
           btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Record';
         }
 
-        // Reload with current filter
-        const currentFilter = document.getElementById('filterDate').value;
-        await loadData(currentFilter || null);
+        // Reload with current filters
+        const currentDateFilter = document.getElementById('filterDate').value || null;
+        const currentStatusFilter = document.getElementById('filterStatus').value || null;
+        await loadData(currentDateFilter, currentStatusFilter);
 
         document.getElementById("name").value = "";
         document.getElementById("lrn").value = "";
@@ -1526,8 +1899,9 @@
         }
 
         showAlert('✅ Record deleted successfully!', 'success');
-        const currentFilter = document.getElementById('filterDate').value;
-        await loadData(currentFilter || null);
+        const currentDateFilter = document.getElementById('filterDate').value || null;
+        const currentStatusFilter = document.getElementById('filterStatus').value || null;
+        await loadData(currentDateFilter, currentStatusFilter);
       } catch (error) {
         console.error('Error deleting record:', error);
         showAlert('❌ Error deleting record: ' + error.message, 'error');
@@ -1550,23 +1924,36 @@
     }
 
     // ============================
-    // FILTER BY DATE
+    // FILTER EVENT LISTENERS - INTEGRATED WITH STATUS FILTER
     // ============================
-    document.getElementById('filterDate').addEventListener('change', (e) => {
-      loadData(e.target.value || null);
+
+    // Status filter change
+    document.getElementById('filterStatus').addEventListener('change', () => {
+      const dateFilter = document.getElementById('filterDate').value || null;
+      const statusFilter = document.getElementById('filterStatus').value || null;
+      loadData(dateFilter, statusFilter);
     });
 
-    // Today button
+    // Date filter change (updated to include status)
+    document.getElementById('filterDate').addEventListener('change', () => {
+      const dateFilter = document.getElementById('filterDate').value || null;
+      const statusFilter = document.getElementById('filterStatus').value || null;
+      loadData(dateFilter, statusFilter);
+    });
+
+    // Today button (updated)
     document.getElementById('todayBtn').addEventListener('click', () => {
       const today = getTodayDate();
       document.getElementById('filterDate').value = today;
-      loadData(null); // Pass null to trigger automatic today filter
+      const statusFilter = document.getElementById('filterStatus').value || null;
+      loadData(null, statusFilter); // Pass null to trigger automatic today filter
     });
 
-    // Clear filter
+    // Clear all filters button (updated)
     document.getElementById('clearFilterBtn').addEventListener('click', () => {
       document.getElementById('filterDate').value = '';
-      loadData(''); // Empty string shows all records
+      document.getElementById('filterStatus').value = '';
+      loadData('', null); // Empty string shows all records
     });
 
     // ============================
@@ -1574,13 +1961,13 @@
     // ============================
     const toggleBtn = document.getElementById("modeToggle");
     const body = document.body;
-    
+
     function updateToggleText() {
       toggleBtn.innerHTML = body.classList.contains("dark")
         ? '<i class="fa-solid fa-sun"></i> Light Mode'
         : '<i class="fa-solid fa-moon"></i> Dark Mode';
     }
-    
+
     toggleBtn.addEventListener("click", () => {
       body.classList.toggle("dark");
       body.classList.toggle("light");
@@ -1601,7 +1988,7 @@
     const sidebar = document.getElementById("sidebar");
     const collapseBtn = document.getElementById("collapseBtn");
     const collapseBtnIcon = collapseBtn.querySelector("i");
-    
+
     collapseBtn.addEventListener("click", () => {
       sidebar.classList.toggle("collapsed");
       
@@ -1624,68 +2011,84 @@
     }
 
     // ============================
+    // PHOTO NORMALIZATION
+    // ============================
+    function normalizePhotoSrc(photo) {
+      if (!photo) return '';
+
+      // Already a full URL or data URL
+      if (photo.startsWith('http') || photo.startsWith('data:image')) {
+        return photo;
+      }
+
+      // Assume raw Base64 → convert to data URL
+      return `data:image/jpeg;base64,${photo}`;
+    }
+
+    // ============================
+    // PHOTO MODAL FUNCTIONS
+    // ============================
+    function openPhotoModal(src) {
+      const modal = document.getElementById('photoModal');
+      const modalImg = document.getElementById('photoModalImg');
+
+      modalImg.src = src;
+      modal.style.display = 'flex';
+    }
+
+    // Close modal
+    function closePhotoModal() {
+      const modal = document.getElementById('photoModal');
+      modal.style.display = 'none';
+      document.getElementById('photoModalImg').src = '';
+    }
+
+    // Close on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closePhotoModal();
+      }
+    });
+
+    // Close when clicking outside the image
+    document.getElementById('photoModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'photoModal') {
+        closePhotoModal();
+      }
+    });
+
+    // ============================
+    // CHECK FOR DUPLICATE ENTRY
+    // ============================
+    function checkDuplicateEntry(name, date, status) {
+      // Check if there's already an entry for this student on this date with the same status
+      return allAttendanceData.some(record => 
+        record.student_name.toLowerCase().trim() === name.toLowerCase().trim() && 
+        record.date === date &&
+        record.status.toLowerCase() === status.toLowerCase()
+      );
+    }
+
+    // ============================
     // INITIALIZATION
     // ============================
     document.getElementById("date").valueAsDate = new Date();
     document.getElementById("time").value = getCurrentTime();
-    
+
     // Set filter date to today by default
     document.getElementById("filterDate").value = getTodayDate();
-    
+
+    // Set status filter to drop-off by default
+    document.getElementById("filterStatus").value = "drop-off";
+
     window.onload = function() {
-      if (checkAuthentication()) {
-        displayUserInfo();
-        loadSettings(); // Load saved class time settings
-        loadData(null); // Load today's data automatically
-        console.log("✅ Attendance page loaded successfully - showing today's records");
-      }
-    };
-
-
-    function normalizePhotoSrc(photo) {
-  if (!photo) return '';
-
-  // Already a full URL or data URL
-  if (photo.startsWith('http') || photo.startsWith('data:image')) {
-    return photo;
+    if (checkAuthentication()) {
+    displayUserInfo();
+    loadSettings(); // Load saved class time settings
+    loadData(null, "drop-off"); // Load today's data with drop-off filter
+    console.log("✅ Attendance page loaded successfully - showing today's drop-off records");
   }
-
-  // Assume raw Base64 → convert to data URL
-  return `data:image/jpeg;base64,${photo}`;
-}
-
-// ============================
-// PHOTO MODAL FUNCTIONS
-// ============================
-function openPhotoModal(src) {
-  const modal = document.getElementById('photoModal');
-  const modalImg = document.getElementById('photoModalImg');
-
-  modalImg.src = src;
-  modal.style.display = 'flex';
-}
-
-// Close modal
-function closePhotoModal() {
-  const modal = document.getElementById('photoModal');
-  modal.style.display = 'none';
-  document.getElementById('photoModalImg').src = '';
-}
-
-// Close on ESC key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closePhotoModal();
-  }
-});
-
-// Close when clicking outside the image
-document.getElementById('photoModal')?.addEventListener('click', (e) => {
-  if (e.target.id === 'photoModal') {
-    closePhotoModal();
-  }
-});
-
+};
   </script>
 </body>
 </html>
