@@ -963,28 +963,36 @@ body.dark .sf2-info {
         </div>
       </section>
 
-      <!-- SF2 Report Generation Section -->
-      <section class="sf2-container">
-        <h2><i class="fa-solid fa-file-excel"></i> Generate SF2 Report</h2>
-        
-        <div class="sf2-controls">
-          <div class="file-input-wrapper">
-            <input type="file" id="sf2Template" accept=".xlsx,.xls" />
-            <label for="sf2Template" class="file-input-label">
-              <i class="fa-solid fa-upload"></i> Upload SF2 Template
-            </label>
-          </div>
-          
-          <button class="generate-sf2-btn" id="generateSf2Btn" disabled>
-            <i class="fa-solid fa-file-export"></i> Generate SF2 Report
-          </button>
-        </div>
-        
-        <div class="sf2-info">
-          <i class="fa-solid fa-info-circle"></i> 
-          <strong>Instructions:</strong> Upload your SF2 template file (.xlsx), then click "Generate SF2 Report" to create a report with attendance data for the current month.
-        </div>
-      </section>
+    <!-- SF2 Report Generation Section -->
+<section class="sf2-container">
+  <h2><i class="fa-solid fa-file-excel"></i> Export Attendance Data</h2>
+  
+  <div class="sf2-controls">
+    <!-- CSV Export Button -->
+    <button class="generate-sf2-btn" id="exportCsvBtn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 6px 20px rgba(59,130,246,0.3);">
+      <i class="fa-solid fa-file-csv"></i> Export to CSV
+    </button>
+    
+    <!-- SF2 Template Upload -->
+    <div class="file-input-wrapper">
+      <input type="file" id="sf2Template" accept=".xlsx,.xls" />
+      <label for="sf2Template" class="file-input-label">
+        <i class="fa-solid fa-upload"></i> Upload SF2 Template
+      </label>
+    </div>
+    
+    <!-- SF2 Generate Button -->
+    <button class="generate-sf2-btn" id="generateSf2Btn" disabled>
+      <i class="fa-solid fa-file-export"></i> Generate SF2 Report
+    </button>
+  </div>
+  
+  <div class="sf2-info">
+    <i class="fa-solid fa-info-circle"></i> 
+    <strong>CSV Export:</strong> Export current filtered data to CSV format. 
+    <strong>SF2 Report:</strong> Upload your SF2 template file (.xlsx), then click "Generate SF2 Report" to create a report with attendance data for the current month.
+  </div>
+</section>
 
 <!-- ============================
      FILTER SECTION WITH STATUS FILTER
@@ -1117,6 +1125,143 @@ body.dark .sf2-info {
       
       return 'Present';
     }
+
+
+    // ============================
+// CSV EXPORT FUNCTION
+// ============================
+function convertToCSV(data) {
+  if (!data || data.length === 0) return '';
+  
+  // Define headers
+  const headers = ['Student Name', 'LRN', 'Gender', 'Date', 'Time', 'Status'];
+  
+  // Create CSV rows
+  const rows = data.map(record => {
+    return [
+      record.student_name || '',
+      record.student_lrn || '',
+      record.gender || '',
+      record.date || '',
+      record.time || '',
+      record.status || ''
+    ].map(field => {
+      // Escape fields that contain commas, quotes, or newlines
+      const fieldStr = String(field);
+      if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+        return `"${fieldStr.replace(/"/g, '""')}"`;
+      }
+      return fieldStr;
+    }).join(',');
+  });
+  
+  // Combine headers and rows
+  return [headers.join(','), ...rows].join('\n');
+}
+
+function downloadCSV(csvContent, filename) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+}
+
+// ============================
+// CSV EXPORT EVENT LISTENER
+// ============================
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+  try {
+    // Get current filter values
+    const filterDate = document.getElementById('filterDate').value;
+    const filterStatus = document.getElementById('filterStatus').value;
+    
+    // Determine which data to export
+    let dataToExport = [...allAttendanceData];
+    
+    // Apply filters if any
+    if (filterDate) {
+      dataToExport = dataToExport.filter(record => record.date === filterDate);
+    }
+    
+    if (filterStatus) {
+      dataToExport = dataToExport.filter(record => {
+        const status = (record.status || '').toLowerCase().replace(/\s+/g, '-');
+        const targetStatus = filterStatus.toLowerCase();
+        
+        if (targetStatus === 'drop-off') {
+          return status === 'drop-off' || status === 'dropdown' || status === 'dropoff';
+        }
+        if (targetStatus === 'pick-up') {
+          return status === 'pick-up' || status === 'pickup';
+        }
+        
+        return status === targetStatus;
+      });
+    }
+    
+    // Filter out absent and dropped out students
+    dataToExport = dataToExport.filter(record => {
+      const status = (record.status || '').toLowerCase();
+      return status !== 'absent' && status !== 'dropped out';
+    });
+    
+    // Remove duplicates
+    const uniqueData = [];
+    const seen = new Set();
+    dataToExport.forEach(record => {
+      const key = `${record.student_name}_${record.date}_${record.status}`.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueData.push(record);
+      }
+    });
+    
+    dataToExport = uniqueData;
+    
+    if (dataToExport.length === 0) {
+      showAlert('⚠️ No records to export. Please adjust your filters.', 'error');
+      return;
+    }
+    
+    // Sort by date (most recent first)
+    dataToExport.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Convert to CSV
+    const csvContent = convertToCSV(dataToExport);
+    
+    // Generate filename
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    let filename = `Attendance_Report_${dateStr}.csv`;
+    
+    if (filterDate && filterStatus) {
+      filename = `Attendance_${filterStatus}_${filterDate}.csv`;
+    } else if (filterDate) {
+      filename = `Attendance_${filterDate}.csv`;
+    } else if (filterStatus) {
+      filename = `Attendance_${filterStatus}_${dateStr}.csv`;
+    }
+    
+    // Download CSV
+    downloadCSV(csvContent, filename);
+    
+    showAlert(`✅ CSV exported successfully! ${dataToExport.length} records exported.`, 'success');
+    
+  } catch (error) {
+    console.error('CSV Export Error:', error);
+    showAlert(`❌ Error exporting CSV: ${error.message}`, 'error');
+  }
+});
+
 
     // ============================
     // AUTHENTICATION CHECK
