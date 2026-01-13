@@ -259,12 +259,16 @@
           <input type="text" id="name" required>
         </div>
         <div class="col">
-          <label for="age">Age *</label>
-          <input type="number" id="age" required min="18" max="100">
+          <label for="username">Username *</label>
+          <input type="text" id="username" placeholder="Choose a unique username" required>
         </div>
       </div>
 
       <div class="form-row">
+        <div class="col">
+          <label for="age">Age *</label>
+          <input type="number" id="age" required min="18" max="100">
+        </div>
         <div class="col">
           <label for="gender">Gender *</label>
           <select id="gender" required>
@@ -273,22 +277,21 @@
             <option value="Female">Female</option>
           </select>
         </div>
-        <div class="col">
-          <label for="section">Section & Grade Handling *</label>
-          <input type="text" id="section" placeholder="e.g. Grade 6 - Section A" required>
-        </div>
       </div>
 
       <div class="form-row">
         <div class="col">
+          <label for="section">Section & Grade Handling *</label>
+          <input type="text" id="section" placeholder="e.g. Grade 6 - Section A" required>
+        </div>
+        <div class="col">
           <label for="contact">Contact Number *</label>
           <input type="tel" id="contact" required pattern="[0-9]{10,15}" placeholder="e.g. 09123456789">
         </div>
-        <div class="col">
-          <label for="address">Address *</label>
-          <input type="text" id="address" required>
-        </div>
       </div>
+
+      <label for="address">Address *</label>
+      <input type="text" id="address" required>
 
       <label for="password">Password *</label>
       <input type="password" id="password" required minlength="6">
@@ -360,7 +363,6 @@
       try {
         console.log("📝 Attempting registration with:", { ...teacherData, password: "***" });
 
-        // Based on your URLs: path('register/', RegisterView.as_view(), name='register')
         const endpoint = `${API_BASE}/register/`;
         
         console.log(`🔄 Trying endpoint: ${endpoint}`);
@@ -445,6 +447,11 @@
         throw new Error('Name must be at least 2 characters long');
       }
 
+      // Username validation
+      if (data.username.length < 3) {
+        throw new Error('Username must be at least 3 characters long');
+      }
+
       // Age validation
       if (data.age < 18 || data.age > 100) {
         throw new Error('Age must be between 18 and 100');
@@ -478,16 +485,13 @@
       }
 
       // Gather form data - MUST match backend serializer exactly
-      const fullName = document.getElementById('name').value.trim();
-      const username = fullName.toLowerCase().replace(/\s+/g, '_'); // Create username from name
-      
       const teacherData = {
-        username: username,           // Required by serializer
-        password: password,           // Required by serializer
-        name: fullName,              // Required by serializer (full name)
+        username: document.getElementById('username').value.trim(),  // Now from form field
+        password: password,
+        name: document.getElementById('name').value.trim(),
         age: parseInt(document.getElementById('age').value),
         gender: document.getElementById('gender').value,
-        section: document.getElementById('section').value.trim(),  // Use 'section' not 'grade'
+        section: document.getElementById('section').value.trim(),
         contact: document.getElementById('contact').value.trim(),
         address: document.getElementById('address').value.trim()
       };
@@ -547,5 +551,4 @@
     });
   </script>
 </body>
-
 </html>
