@@ -568,6 +568,10 @@
         window.location.href = "teacherslogin.html";
         return false;
       }
+      
+      if (!teacherGrade) {
+        console.warn("⚠️ No teacher grade/section found - notifications may show all records");
+      }
 
       return true;
     }
@@ -724,18 +728,8 @@
         loading.style.display = 'block';
         container.innerHTML = '';
         
-        // Build URL with teacher filter if available
+        // Build URL - fetch all attendance records first
         let url = API_ATTENDANCE;
-        const params = new URLSearchParams();
-        
-        // Add teacher grade filter to get only students from this teacher's grade
-        if (teacherGrade) {
-          params.append('grade', teacherGrade);
-        }
-        
-        if (params.toString()) {
-          url += '?' + params.toString();
-        }
         
         console.log("🌐 Fetching notifications from:", url);
         
@@ -755,8 +749,19 @@
         
         console.log("✅ Loaded attendance records:", data.length);
         
+        // Filter records to only show those from teacher's grade/section
+        let teacherRecords = data;
+        if (teacherGrade) {
+          teacherRecords = data.filter(record => {
+            const recordGrade = record.grade || record.student_grade || record.section;
+            // Match the grade exactly
+            return recordGrade && recordGrade.toString() === teacherGrade.toString();
+          });
+          console.log(`📚 Filtered to teacher's grade (${teacherGrade}):`, teacherRecords.length, 'records');
+        }
+        
         // Convert records to notifications
-        allNotifications = data
+        allNotifications = teacherRecords
           .filter(record => {
             const status = (record.status || '').toLowerCase();
             // Only show notifications for relevant statuses
