@@ -404,6 +404,34 @@
       background: linear-gradient(135deg, #38c586, #2fa46e);
       border-radius: 10px;
     }
+
+    /* Notification Settings Modal */
+    .notif-settings-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    .notif-settings-modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      padding: 35px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    body.dark .modal-content {
+      background: #1e293b;
+    }
   </style>
 </head>
 <body class="light">
@@ -491,74 +519,6 @@
           <button id="todayBtn"><i class="fa-solid fa-calendar-day"></i> Today</button>
           <button id="clearFilterBtn"><i class="fa-solid fa-times"></i> Clear</button>
           <button id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
-          <button id="notifSettingsBtn" style="background: linear-gradient(135deg, #007bff, #0056b3);">
-            <i class="fa-solid fa-bell"></i> Notification Settings
-          </button>
-        </div>
-      </div>
-      
-      <!-- Notification Settings Modal -->
-      <div id="notifSettingsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 35px; border-radius: 20px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-          <h2 style="color: #38c586; margin-bottom: 25px; font-size: 24px; display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-bell"></i> Desktop Notification Settings
-          </h2>
-          
-          <div style="margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 12px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-desktop" style="font-size: 24px; color: #38c586;"></i>
-                <div>
-                  <div style="font-weight: 700; color: #2c3e50;">Desktop Notifications</div>
-                  <div style="font-size: 13px; color: #64748b;">Get pop-up alerts on your computer</div>
-                </div>
-              </div>
-              <div id="notifStatusBadge" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;"></div>
-            </div>
-            
-            <button id="enableDesktopNotif" style="width: 100%; background: linear-gradient(135deg, #38c586, #2fa46e); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 10px;">
-              <i class="fa-solid fa-bell"></i> Enable Desktop Notifications
-            </button>
-          </div>
-          
-          <div style="margin-bottom: 25px;">
-            <div style="font-weight: 700; margin-bottom: 15px; color: #2c3e50;">
-              <i class="fa-solid fa-sliders"></i> Notification Preferences
-            </div>
-            
-            <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px; cursor: pointer;">
-              <input type="checkbox" id="notifLate" checked style="width: 18px; height: 18px; cursor: pointer;">
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: #2c3e50;">⏰ Late Arrivals</div>
-                <div style="font-size: 12px; color: #64748b;">Alert when students arrive late</div>
-              </div>
-            </label>
-            
-            <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px; cursor: pointer;">
-              <input type="checkbox" id="notifAbsent" checked style="width: 18px; height: 18px; cursor: pointer;">
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: #2c3e50;">❌ Absences</div>
-                <div style="font-size: 12px; color: #64748b;">Alert when students are absent</div>
-              </div>
-            </label>
-            
-            <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer;">
-              <input type="checkbox" id="notifPickup" checked style="width: 18px; height: 18px; cursor: pointer;">
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: #2c3e50;">👋 Early Pick-ups</div>
-                <div style="font-size: 12px; color: #64748b;">Alert when students are picked up early</div>
-              </div>
-            </label>
-          </div>
-          
-          <div style="display: flex; gap: 10px;">
-            <button id="saveNotifSettings" style="flex: 1; background: linear-gradient(135deg, #38c586, #2fa46e); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer;">
-              <i class="fa-solid fa-check"></i> Save Settings
-            </button>
-            <button id="closeNotifSettings" style="background: #e2e8f0; color: #64748b; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">
-              Cancel
-            </button>
-          </div>
         </div>
       </div>
       
@@ -574,14 +534,56 @@
 
   <script>
     // ============================
-    // AUTHENTICATION
+    // AUTHENTICATION & INITIALIZATION
     // ============================
-    let authToken = localStorage.getItem("authToken") || localStorage.getItem("auth_token");
-    let teacherId = localStorage.getItem("teacherId") || localStorage.getItem("teacher_id");
+    let authToken = null;
+    let teacherId = null;
+    let teacherGrade = null;
+
+    function checkAuthentication() {
+      // Try multiple possible token keys
+      authToken = localStorage.getItem("authToken") || 
+                  localStorage.getItem("auth_token") || 
+                  localStorage.getItem("token");
+      
+      teacherId = localStorage.getItem("teacherId") || 
+                  localStorage.getItem("teacher_id") || 
+                  localStorage.getItem("id");
+
+      teacherGrade = localStorage.getItem("teacherSection") || 
+                     localStorage.getItem("teacher_section") || 
+                     localStorage.getItem("grade") || 
+                     localStorage.getItem("section");
+
+      console.log("🔐 Authentication check:", {
+        hasToken: !!authToken,
+        hasTeacherId: !!teacherId,
+        teacherGrade: teacherGrade,
+        token: authToken ? "***" + authToken.slice(-4) : "none"
+      });
+
+      if (!authToken) {
+        console.log("❌ No authentication token found");
+        alert("⚠️ Please login first to view notifications.");
+        window.location.href = "teacherslogin.html";
+        return false;
+      }
+
+      return true;
+    }
     
     function displayUserInfo() {
-      const teacherName = localStorage.getItem("teacherName") || "Teacher";
-      const teacherSection = localStorage.getItem("teacherSection") || "";
+      const teacherName = localStorage.getItem("teacherName") || 
+                         localStorage.getItem("teacher_name") || 
+                         localStorage.getItem("name") || 
+                         "Teacher";
+      
+      const teacherSection = localStorage.getItem("teacherSection") || 
+                            localStorage.getItem("teacher_section") || 
+                            localStorage.getItem("grade") || 
+                            localStorage.getItem("section") || 
+                            "";
+
       document.getElementById("userName").textContent = teacherName;
       document.getElementById("userSection").textContent = teacherSection ? `Grade ${teacherSection}` : "";
     }
@@ -595,10 +597,22 @@
     let allNotifications = [];
     
     function getAuthHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        ...(authToken && { 'Authorization': `Token ${authToken}` })
+      const headers = {
+        'Content-Type': 'application/json'
       };
+      
+      if (authToken) {
+        // Try different authorization formats
+        if (authToken.startsWith('Token ') || authToken.startsWith('Bearer ')) {
+          headers['Authorization'] = authToken;
+        } else {
+          // Default to Token format for Django REST Framework
+          headers['Authorization'] = `Token ${authToken}`;
+        }
+      }
+      
+      console.log("📤 Request headers:", { ...headers, Authorization: headers.Authorization ? '***' + headers.Authorization.slice(-4) : 'none' });
+      return headers;
     }
     
     // ============================
@@ -654,7 +668,8 @@
         studentName: studentName,
         date: date,
         time: record.time,
-        recordId: record.id
+        recordId: record.id,
+        grade: record.grade || record.student_grade
       };
       
       switch (status) {
@@ -709,20 +724,42 @@
         loading.style.display = 'block';
         container.innerHTML = '';
         
-        const response = await fetch(API_ATTENDANCE, {
+        // Build URL with teacher filter if available
+        let url = API_ATTENDANCE;
+        const params = new URLSearchParams();
+        
+        // Add teacher grade filter to get only students from this teacher's grade
+        if (teacherGrade) {
+          params.append('grade', teacherGrade);
+        }
+        
+        if (params.toString()) {
+          url += '?' + params.toString();
+        }
+        
+        console.log("🌐 Fetching notifications from:", url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
           headers: getAuthHeaders()
         });
         
-        if (!response.ok) throw new Error('Failed to load data');
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("❌ API Error:", errorText);
+          throw new Error(`Failed to load notifications: ${response.status}`);
+        }
         
         const data = await response.json();
         loading.style.display = 'none';
+        
+        console.log("✅ Loaded attendance records:", data.length);
         
         // Convert records to notifications
         allNotifications = data
           .filter(record => {
             const status = (record.status || '').toLowerCase();
-            // Only show notifications for relevant statuses (not dropped out)
+            // Only show notifications for relevant statuses
             return status !== 'dropped out' && status !== 'droppedout';
           })
           .map(record => createNotificationFromRecord(record))
@@ -777,7 +814,7 @@
               <button class="btn-view" onclick="viewRecord(${notif.recordId})">
                 <i class="fa-solid fa-eye"></i> View
               </button>
-              <button class="btn-dismiss" onclick="dismissNotification(${notif.id})">
+              <button class="btn-dismiss" onclick="dismissNotification(this, ${notif.id})">
                 <i class="fa-solid fa-times"></i> Dismiss
               </button>
             </div>
@@ -787,12 +824,15 @@
         
       } catch (error) {
         loading.style.display = 'none';
-        console.error('Error loading notifications:', error);
+        console.error('❌ Error loading notifications:', error);
         container.innerHTML = `
           <div class="no-notifications">
             <i class="fa-solid fa-triangle-exclamation" style="color: #dc3545;"></i>
             <h3>Error Loading Notifications</h3>
-            <p>Failed to load notifications. Please try again.</p>
+            <p>${error.message || 'Failed to load notifications. Please try again.'}</p>
+            <button onclick="loadNotifications('all', null)" style="margin-top: 15px; padding: 10px 20px; background: linear-gradient(135deg, #38c586, #2fa46e); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">
+              <i class="fa-solid fa-rotate"></i> Retry
+            </button>
           </div>
         `;
       }
@@ -832,7 +872,7 @@
         }
       }
       
-      // Also save to localStorage for other pages
+      // Save to localStorage for other pages
       localStorage.setItem('notificationCount', count);
     }
     
@@ -844,8 +884,8 @@
       window.location.href = 'attendance.html';
     }
     
-    function dismissNotification(notificationId) {
-      const element = event.target.closest('.notification');
+    function dismissNotification(buttonElement, notificationId) {
+      const element = buttonElement.closest('.notification');
       element.style.opacity = '0';
       element.style.transform = 'translateX(100%)';
       setTimeout(() => {
@@ -894,61 +934,6 @@
       const filterType = document.getElementById('filterType').value;
       const filterDate = document.getElementById('filterDate').value;
       loadNotifications(filterType, filterDate || null);
-    });
-    
-    // ============================
-    // NOTIFICATION SETTINGS MODAL
-    // ============================
-    document.getElementById('notifSettingsBtn').addEventListener('click', () => {
-      document.getElementById('notifSettingsModal').style.display = 'flex';
-      updateNotificationStatusBadge();
-    });
-    
-    document.getElementById('closeNotifSettings').addEventListener('click', () => {
-      document.getElementById('notifSettingsModal').style.display = 'none';
-    });
-    
-    document.getElementById('enableDesktopNotif').addEventListener('click', async () => {
-      await requestNotificationPermission();
-      updateNotificationStatusBadge();
-    });
-    
-    document.getElementById('saveNotifSettings').addEventListener('click', () => {
-      saveNotificationPreferences();
-      document.getElementById('notifSettingsModal').style.display = 'none';
-      
-      // Show success message
-      const successDiv = document.createElement('div');
-      successDiv.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: linear-gradient(135deg, #28a745, #218838);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
-        z-index: 10001;
-        animation: slideInRight 0.5s ease;
-      `;
-      successDiv.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <i class="fa-solid fa-check-circle" style="font-size: 24px;"></i>
-          <div>
-            <div style="font-weight: 700;">Settings Saved!</div>
-            <div style="font-size: 13px; opacity: 0.9;">Your notification preferences have been updated</div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(successDiv);
-      setTimeout(() => successDiv.remove(), 3000);
-    });
-    
-    // Close modal when clicking outside
-    document.getElementById('notifSettingsModal').addEventListener('click', (e) => {
-      if (e.target.id === 'notifSettingsModal') {
-        document.getElementById('notifSettingsModal').style.display = 'none';
-      }
     });
     
     // ============================
@@ -1016,303 +1001,25 @@
     }, 30000);
     
     // ============================
-    // BROWSER NOTIFICATIONS
-    // ============================
-    let lastNotificationCount = 0;
-    let notificationPermission = false;
-    let notificationPreferences = {
-      late: true,
-      absent: true,
-      pickup: true
-    };
-    
-    // Load notification preferences
-    function loadNotificationPreferences() {
-      const saved = localStorage.getItem('notificationPreferences');
-      if (saved) {
-        notificationPreferences = JSON.parse(saved);
-        document.getElementById('notifLate').checked = notificationPreferences.late;
-        document.getElementById('notifAbsent').checked = notificationPreferences.absent;
-        document.getElementById('notifPickup').checked = notificationPreferences.pickup;
-      }
-    }
-    
-    // Save notification preferences
-    function saveNotificationPreferences() {
-      notificationPreferences = {
-        late: document.getElementById('notifLate').checked,
-        absent: document.getElementById('notifAbsent').checked,
-        pickup: document.getElementById('notifPickup').checked
-      };
-      localStorage.setItem('notificationPreferences', JSON.stringify(notificationPreferences));
-    }
-    
-    // Update notification status badge
-    function updateNotificationStatusBadge() {
-      const badge = document.getElementById('notifStatusBadge');
-      if (Notification.permission === "granted") {
-        badge.textContent = "✅ Enabled";
-        badge.style.background = "linear-gradient(135deg, #d4edda, #c3e6cb)";
-        badge.style.color = "#155724";
-        document.getElementById('enableDesktopNotif').style.display = "none";
-      } else if (Notification.permission === "denied") {
-        badge.textContent = "❌ Blocked";
-        badge.style.background = "linear-gradient(135deg, #f8d7da, #f5c6cb)";
-        badge.style.color = "#721c24";
-        document.getElementById('enableDesktopNotif').textContent = "⚠️ Unblock in Browser Settings";
-        document.getElementById('enableDesktopNotif').disabled = true;
-        document.getElementById('enableDesktopNotif').style.opacity = "0.6";
-      } else {
-        badge.textContent = "⏸️ Disabled";
-        badge.style.background = "linear-gradient(135deg, #fff3cd, #ffeaa7)";
-        badge.style.color = "#856404";
-        document.getElementById('enableDesktopNotif').style.display = "block";
-      }
-    }
-    
-    // Request notification permission
-    async function requestNotificationPermission() {
-      if (!("Notification" in window)) {
-        console.log("❌ This browser does not support desktop notifications");
-        return false;
-      }
-      
-      if (Notification.permission === "granted") {
-        notificationPermission = true;
-        console.log("✅ Notification permission already granted");
-        return true;
-      }
-      
-      if (Notification.permission !== "denied") {
-        const permission = await Notification.requestPermission();
-        notificationPermission = permission === "granted";
-        
-        if (notificationPermission) {
-          console.log("✅ Notification permission granted");
-          showWelcomeNotification();
-        } else {
-          console.log("❌ Notification permission denied");
-        }
-        return notificationPermission;
-      }
-      
-      return false;
-    }
-    
-    // Show welcome notification
-    function showWelcomeNotification() {
-      new Notification("CHILDTrack Notifications Enabled", {
-        body: "You'll now receive desktop notifications for important events",
-        icon: "https://cdn-icons-png.flaticon.com/512/3976/3976625.png",
-        badge: "https://cdn-icons-png.flaticon.com/512/3976/3976625.png",
-        tag: "welcome"
-      });
-    }
-    
-    // Check for new notifications and send browser notifications
-    async function checkForNewNotifications() {
-      try {
-        const response = await fetch(API_ATTENDANCE, {
-          headers: getAuthHeaders()
-        });
-        
-        if (!response.ok) return;
-        
-        const data = await response.json();
-        const today = getTodayDate();
-        
-        // Get today's important notifications
-        const importantNotifications = data.filter(record => {
-          if (record.date !== today) return false;
-          const status = (record.status || '').toLowerCase();
-          return ['late', 'absent', 'pick-up', 'pickup'].includes(status);
-        });
-        
-        const currentCount = importantNotifications.length;
-        
-        // Check if there are new notifications
-        if (currentCount > lastNotificationCount && lastNotificationCount > 0) {
-          const newNotifications = importantNotifications.slice(0, currentCount - lastNotificationCount);
-          
-          // Send browser notification for each new notification
-          newNotifications.forEach(record => {
-            sendBrowserNotification(record);
-          });
-        }
-        
-        lastNotificationCount = currentCount;
-        
-      } catch (error) {
-        console.error('Error checking for new notifications:', error);
-      }
-    }
-    
-    // Send individual browser notification
-    function sendBrowserNotification(record) {
-      if (!notificationPermission) return;
-      
-      const status = (record.status || '').toLowerCase();
-      
-      // Check if this type of notification is enabled
-      if (status === 'late' && !notificationPreferences.late) return;
-      if (status === 'absent' && !notificationPreferences.absent) return;
-      if ((status === 'pick-up' || status === 'pickup') && !notificationPreferences.pickup) return;
-      
-      const studentName = record.student_name || record.name || 'Unknown Student';
-      const time = formatTime(record.time);
-      
-      let title = '';
-      let body = '';
-      let icon = 'https://cdn-icons-png.flaticon.com/512/3976/3976625.png';
-      
-      switch (status) {
-        case 'late':
-          title = '⏰ Late Arrival Alert';
-          body = `${studentName} arrived late at ${time}`;
-          icon = 'https://cdn-icons-png.flaticon.com/512/2838/2838779.png';
-          break;
-        case 'absent':
-          title = '❌ Student Absent';
-          body = `${studentName} was marked absent today`;
-          icon = 'https://cdn-icons-png.flaticon.com/512/1828/1828665.png';
-          break;
-        case 'pick-up':
-        case 'pickup':
-          title = '👋 Early Pick-up';
-          body = `${studentName} was picked up at ${time}`;
-          icon = 'https://cdn-icons-png.flaticon.com/512/3004/3004458.png';
-          break;
-      }
-      
-      const notification = new Notification(title, {
-        body: body,
-        icon: icon,
-        badge: icon,
-        tag: `student-${record.id}`,
-        requireInteraction: true,
-        vibrate: [200, 100, 200],
-        data: {
-          recordId: record.id,
-          url: window.location.origin + '/notification.html'
-        }
-      });
-      
-      // Play notification sound
-      playNotificationSound();
-      
-      // Handle notification click
-      notification.onclick = function(event) {
-        event.preventDefault();
-        window.focus();
-        notification.close();
-        
-        const filterType = document.getElementById('filterType').value;
-        const filterDate = document.getElementById('filterDate').value;
-        loadNotifications(filterType, filterDate || null);
-      };
-    }
-    
-    // Play notification sound
-    function playNotificationSound() {
-      // Create an audio context for the notification sound
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    }
-    
-    // ============================
-    // NOTIFICATION PERMISSION UI
-    // ============================
-    function showNotificationPrompt() {
-      if (Notification.permission === "default") {
-        const promptDiv = document.createElement('div');
-        promptDiv.style.cssText = `
-          position: fixed;
-          top: 100px;
-          right: 20px;
-          background: linear-gradient(135deg, #38c586, #2fa46e);
-          color: white;
-          padding: 20px 25px;
-          border-radius: 16px;
-          box-shadow: 0 10px 40px rgba(56, 197, 134, 0.4);
-          z-index: 10000;
-          max-width: 400px;
-          animation: slideInRight 0.5s ease;
-        `;
-        
-        promptDiv.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 40px;">🔔</div>
-            <div style="flex: 1;">
-              <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">Enable Desktop Notifications?</div>
-              <div style="font-size: 13px; opacity: 0.9; margin-bottom: 15px;">Get instant alerts for late arrivals, absences, and pickups</div>
-              <div style="display: flex; gap: 10px;">
-                <button id="enableNotifBtn" style="background: white; color: #38c586; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;">
-                  Enable
-                </button>
-                <button id="dismissNotifBtn" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                  Later
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-        
-        document.body.appendChild(promptDiv);
-        
-        document.getElementById('enableNotifBtn').addEventListener('click', async () => {
-          await requestNotificationPermission();
-          promptDiv.remove();
-        });
-        
-        document.getElementById('dismissNotifBtn').addEventListener('click', () => {
-          promptDiv.remove();
-        });
-      }
-    }
-    
-    // ============================
     // INITIALIZATION
     // ============================
     window.onload = async function() {
+      console.log("🚀 Initializing notifications page...");
+      
+      // Check authentication first
+      if (!checkAuthentication()) {
+        return;
+      }
+      
       displayUserInfo();
-      loadNotificationPreferences();
       
       // Load today's notifications by default
       const today = getTodayDate();
       document.getElementById('filterDate').value = today;
       await loadNotifications('all', today);
       
-      // Show notification permission prompt after 2 seconds
-      setTimeout(showNotificationPrompt, 2000);
-      
-      // Request notification permission if not set
-      if (Notification.permission === "granted") {
-        notificationPermission = true;
-      }
-      
-      // Check for new notifications every 30 seconds
-      setInterval(checkForNewNotifications, 30000);
-      
-      // Initial check
-      checkForNewNotifications();
-      
       console.log("✅ Notifications page loaded successfully");
-      console.log("🔔 Desktop notifications:", Notification.permission);
     };
   </script>
 </body>
-
 </html>
