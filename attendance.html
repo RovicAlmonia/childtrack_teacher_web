@@ -1894,7 +1894,7 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
       }
     }
 
-    // ============================
+   // ============================
     // ADD OR UPDATE RECORD
     // ============================
     document.getElementById("addBtn").addEventListener("click", async () => {
@@ -1903,26 +1903,39 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
       const lrn = document.getElementById("lrn").value.trim();
       const gender = document.getElementById("gender").value;
       const date = document.getElementById("date").value;
-      let timestamp = document.getElementById("time").value;
+      let timeValue = document.getElementById("time").value;
       let status = document.getElementById("status").value;
 
-      // Ensure timestamp is always set
-      if (!timestamp) {
-        timestamp = getCurrentTime();
-        document.getElementById("time").value = timestamp;
+      // Ensure time is always set
+      if (!timeValue) {
+        timeValue = getCurrentTime();
+        document.getElementById("time").value = timeValue;
       }
 
-      if (!name || !date || !gender || !timestamp) {
+      if (!name || !date || !gender || !timeValue) {
         showAlert("Please fill all required fields (Name, Gender, Date, Time).", 'error');
         return;
       }
+
+      // Create a proper ISO timestamp from date and time
+      // This ensures the exact time is sent to the backend
+      const dateTimeString = `${date}T${timeValue}:00`;
+      const timestamp = new Date(dateTimeString).toISOString();
+
+      console.log('📅 Sending attendance with timestamp:', {
+        date: date,
+        time: timeValue,
+        combined: dateTimeString,
+        iso: timestamp
+      });
 
       const recordData = { 
         student_name: name,
         student_lrn: lrn || '',
         gender: gender,
         date: date,
-        timestamp: timestamp,
+        time: timeValue,  // Send the time in HH:MM format
+        timestamp: timestamp,  // Send full ISO timestamp
         status: status,
         teacher: teacherId
       };
@@ -2243,3 +2256,4 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
   </script>
 </body>
 </html>
+
