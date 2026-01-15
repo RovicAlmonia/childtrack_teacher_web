@@ -1893,6 +1893,7 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
         throw error;
       }
     }
+  
 // ============================
     // ADD OR UPDATE RECORD
     // ============================
@@ -1916,28 +1917,15 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
         return;
       }
 
-      // Create a proper timestamp in Philippines timezone
-      // This ensures the exact time is sent to the backend with correct timezone
-      const dateTimeString = `${date}T${timeValue}:00`;
-      
-      // Create date object in local timezone (Philippines)
-      const localDate = new Date(dateTimeString);
-      
-      // Get timezone offset in minutes and convert to hours
-      const timezoneOffset = localDate.getTimezoneOffset();
-      const offsetHours = Math.abs(timezoneOffset / 60);
-      const offsetMinutes = Math.abs(timezoneOffset % 60);
-      const offsetSign = timezoneOffset <= 0 ? '+' : '-';
-      
-      // Format: 2026-01-13T10:51:00+08:00 (Philippines is UTC+8)
-      const timestamp = `${date}T${timeValue}:00${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+      // Create timestamp by combining date and time in Philippines timezone
+      // Format: 2026-01-13T10:51:00+08:00
+      const timestamp = `${date}T${timeValue}:00+08:00`;
 
       console.log('📅 Sending attendance with timestamp:', {
         date: date,
         time: timeValue,
-        combined: dateTimeString,
         timestamp: timestamp,
-        timezone: 'Asia/Manila (UTC+8)'
+        timezone: 'Philippines (UTC+8)'
       });
 
       const recordData = { 
@@ -2047,6 +2035,7 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
         }
       }
     });
+  
     // ============================
     // DELETE RECORD
     // ============================
@@ -2266,5 +2255,6 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
   </script>
 </body>
 </html>
+
 
 
