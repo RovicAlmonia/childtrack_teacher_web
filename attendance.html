@@ -1143,7 +1143,7 @@ function convertToCSV(data) {
       record.student_lrn || '',
       record.gender || '',
       record.date || '',
-      record.time || '',
+      record.timestamp || record.time || '',
       record.status || ''
     ].map(field => {
       // Escape fields that contain commas, quotes, or newlines
@@ -1610,7 +1610,7 @@ function updateStats(data, filterDate) {
           const studentLrn = row.student_lrn || row.lrn || '';
           const gender = row.gender || '';
           const date = row.date || '';
-          const time = row.time || '';
+          const timestamp = row.timestamp || row.time || '';
           const status = row.status || 'Unknown';
           const statusClass = status.toLowerCase().replace(/\s+/g, '').replace('-', '');
           
@@ -1627,7 +1627,7 @@ function updateStats(data, filterDate) {
           // Add late indicator if applicable
           let statusDisplay = status;
           let statusBadgeExtra = '';
-          if (status.toLowerCase() === 'late' && time) {
+          if (status.toLowerCase() === 'late' && timestamp) {
             statusBadgeExtra = ` <i class="fa-solid fa-clock" style="font-size: 11px;"></i>`;
           }
           
@@ -1652,11 +1652,11 @@ function updateStats(data, filterDate) {
             </td>
             <td style="font-weight: 600;">${formatDate(date)}</td>
             <td style="font-weight: 600; color: #38c586;">
-              ${time ? `<i class="fa-solid fa-clock"></i> ${formatTime(time)}` : '<span style="color: #94a3b8;">No time</span>'}
+              ${timestamp ? `<i class="fa-solid fa-clock"></i> ${formatTime(timestamp)}` : '<span style="color: #94a3b8;">No time recorded</span>'}
             </td>
             <td><span class="status-badge ${statusClass}">${statusDisplay}${statusBadgeExtra}</span></td>
             <td class="actions">
-              <button class="btn-action edit" onclick="editRow(${row.id}, '${studentName.replace(/'/g, "\\'")}', '${studentLrn}', '${gender}', '${date}', '${time}', '${status}')" title="Edit">
+              <button class="btn-action edit" onclick="editRow(${row.id}, '${studentName.replace(/'/g, "\\'")}', '${studentLrn}', '${gender}', '${date}', '${timestamp}', '${status}')" title="Edit">
                 <i class="fa-solid fa-pen"></i>
               </button>
               <button class="btn-action delete" onclick="deleteRow(${row.id})" title="Delete">
@@ -1903,16 +1903,16 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
       const lrn = document.getElementById("lrn").value.trim();
       const gender = document.getElementById("gender").value;
       const date = document.getElementById("date").value;
-      let time = document.getElementById("time").value;
+      let timestamp = document.getElementById("time").value;
       let status = document.getElementById("status").value;
 
-      // Ensure time is always set
-      if (!time) {
-        time = getCurrentTime();
-        document.getElementById("time").value = time;
+      // Ensure timestamp is always set
+      if (!timestamp) {
+        timestamp = getCurrentTime();
+        document.getElementById("time").value = timestamp;
       }
 
-      if (!name || !date || !gender || !time) {
+      if (!name || !date || !gender || !timestamp) {
         showAlert("Please fill all required fields (Name, Gender, Date, Time).", 'error');
         return;
       }
@@ -1922,7 +1922,7 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
         student_lrn: lrn || '',
         gender: gender,
         date: date,
-        time: time,
+        timestamp: timestamp,
         status: status,
         teacher: teacherId
       };
@@ -2062,12 +2062,12 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
     // ============================
     // EDIT RECORD
     // ============================
-    function editRow(id, name, lrn, gender, date, time, status) {
+    function editRow(id, name, lrn, gender, date, timestamp, status) {
       document.getElementById("name").value = name;
       document.getElementById("lrn").value = lrn || '';
       document.getElementById("gender").value = gender;
       document.getElementById("date").value = date;
-      document.getElementById("time").value = time || getCurrentTime();
+      document.getElementById("time").value = timestamp || getCurrentTime();
       document.getElementById("status").value = status;
       editId = id;
       document.getElementById("addBtn").innerHTML = '<i class="fa-solid fa-check"></i> Update Record';
@@ -2097,14 +2097,14 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
       const today = getTodayDate();
       document.getElementById('filterDate').value = today;
       const statusFilter = document.getElementById('filterStatus').value || null;
-      loadData(null, statusFilter); // Pass null to trigger automatic today filter
+      loadData(null, statusFilter);
     });
 
     // Clear all filters button (updated)
     document.getElementById('clearFilterBtn').addEventListener('click', () => {
       document.getElementById('filterDate').value = '';
       document.getElementById('filterStatus').value = '';
-      loadData('', null); // Empty string shows all records
+      loadData('', null);
     });
 
     // ============================
@@ -2235,11 +2235,12 @@ document.getElementById('generateSf2Btn').addEventListener('click', async () => 
     window.onload = function() {
     if (checkAuthentication()) {
     displayUserInfo();
-    loadSettings(); // Load saved class time settings
-    loadData(null, "drop-off"); // Load today's data with drop-off filter
+    loadSettings();
+    loadData(null, "drop-off");
     console.log("✅ Attendance page loaded successfully - showing today's drop-off records");
   }
 };
   </script>
 </body>
 </html>
+
